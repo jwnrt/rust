@@ -97,7 +97,7 @@ pub fn find(build: &Build) {
         // We don't need to check cross targets for these commands.
         crate::Subcommand::Clean { .. }
         | crate::Subcommand::Suggest { .. }
-        | crate::Subcommand::Format { .. }
+        // | crate::Subcommand::Format { .. }
         | crate::Subcommand::Setup { .. } => {
             build.hosts.iter().cloned().chain(iter::once(build.build)).collect()
         }
