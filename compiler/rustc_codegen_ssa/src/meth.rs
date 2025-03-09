@@ -28,7 +28,9 @@ impl<'a, 'tcx> VirtualIndex {
 
         let llty = bx.fn_ptr_backend_type(fn_abi);
         let ptr_size = bx.data_layout().pointer_size;
-        let vtable_byte_offset = self.0 * ptr_size.bytes();
+        let ptr_stride = bx.data_layout().pointer_stride;
+        let prefix = ptr_stride.bytes() + ptr_size.bytes() * 2;
+        let vtable_byte_offset = prefix + (self.0 - 3) * ptr_stride.bytes();
 
         load_vtable(bx, llvtable, llty, vtable_byte_offset, ty, nonnull)
     }
@@ -64,7 +66,8 @@ impl<'a, 'tcx> VirtualIndex {
 
         let llty = bx.type_isize();
         let ptr_size = bx.data_layout().pointer_size;
-        let vtable_byte_offset = self.0 * ptr_size.bytes();
+        let ptr_stride = bx.data_layout().pointer_stride;
+        let vtable_byte_offset = ptr_stride.bytes() + (self.0 - 1) * ptr_size.bytes();
 
         load_vtable(bx, llvtable, llty, vtable_byte_offset, ty, false)
     }

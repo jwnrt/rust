@@ -341,7 +341,7 @@ pub fn layout_of_ty_query(
             unsized_part = normalize(db, trait_env, unsized_part);
             let metadata = match unsized_part.kind(Interner) {
                 TyKind::Slice(_) | TyKind::Str => {
-                    scalar_unit(dl, Primitive::Int(dl.ptr_sized_integer(), false))
+                    scalar_unit(dl, Primitive::Int(dl.ptr_strided_integer(), false))
                 }
                 TyKind::Dyn(..) => {
                     let mut vtable = scalar_unit(dl, Primitive::Pointer(AddressSpace::DATA));

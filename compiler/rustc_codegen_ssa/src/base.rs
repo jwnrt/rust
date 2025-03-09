@@ -201,7 +201,10 @@ fn unsized_info<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>>(
 
             if let Some(entry_idx) = vptr_entry_idx {
                 let ptr_size = bx.data_layout().pointer_size;
-                let vtable_byte_offset = u64::try_from(entry_idx).unwrap() * ptr_size.bytes();
+                let ptr_stride = bx.data_layout().pointer_stride;
+                let vtable_prefix = ptr_stride.bytes() + ptr_size.bytes() * 2;
+                let vtable_byte_offset =
+                    vtable_prefix + (u64::try_from(entry_idx).unwrap() - 3) * ptr_stride.bytes();
                 load_vtable(bx, old_info, bx.type_ptr(), vtable_byte_offset, source, true)
             } else {
                 old_info
@@ -531,10 +534,11 @@ fn get_argc_argv<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>>(bx: &mut Bx) -> (Bx::Va
         let param_system_table = bx.get_param(1);
         let ptr_size = bx.tcx().data_layout.pointer_size;
         let ptr_align = bx.tcx().data_layout.pointer_align.abi;
+        let ptr_stride = bx.tcx().data_layout.pointer_stride;
         let arg_argc = bx.const_int(bx.cx().type_isize(), 2);
-        let arg_argv = bx.alloca(2 * ptr_size, ptr_align);
+        let arg_argv = bx.alloca(ptr_stride + ptr_size, ptr_align);
         bx.store(param_handle, arg_argv, ptr_align);
-        let arg_argv_el1 = bx.inbounds_ptradd(arg_argv, bx.const_usize(ptr_size.bytes()));
+        let arg_argv_el1 = bx.inbounds_ptradd(arg_argv, bx.const_usize(ptr_stride.bytes()));
         bx.store(param_system_table, arg_argv_el1, ptr_align);
         (arg_argc, arg_argv)
     } else if bx.cx().sess().target.main_needs_argc_argv {

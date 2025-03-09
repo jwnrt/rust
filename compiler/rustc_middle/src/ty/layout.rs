@@ -166,7 +166,7 @@ impl Primitive {
             // FIXME(erikdesjardins): handle non-default addrspace ptr sizes
             Primitive::Pointer(_) => {
                 let signed = false;
-                tcx.data_layout().ptr_sized_integer().to_ty(tcx, signed)
+                tcx.data_layout().ptr_strided_integer().to_ty(tcx, signed)
             }
             Primitive::Float(_) => bug!("floats do not have an int type"),
         }

@@ -1715,13 +1715,13 @@ pub fn write_allocation_bytes<'tcx, Prov: Provenance, Extra, Bytes: AllocBytes>(
     let mut i = Size::ZERO;
     let mut line_start = Size::ZERO;
 
-    let ptr_size = tcx.data_layout.pointer_size;
+    let ptr_stride = tcx.data_layout.pointer_stride;
 
     let mut ascii = String::new();
 
     let oversized_ptr = |target: &mut String, width| {
         if target.len() > width {
-            write!(target, " ({} ptr bytes)", ptr_size.bytes()).unwrap();
+            write!(target, " ({} ptr bytes)", ptr_stride.bytes()).unwrap();
         }
     };
 
@@ -1734,24 +1734,24 @@ pub fn write_allocation_bytes<'tcx, Prov: Provenance, Extra, Bytes: AllocBytes>(
         }
         if let Some(prov) = alloc.provenance().get_ptr(i) {
             // Memory with provenance must be defined
-            assert!(alloc.init_mask().is_range_initialized(alloc_range(i, ptr_size)).is_ok());
+            assert!(alloc.init_mask().is_range_initialized(alloc_range(i, ptr_stride)).is_ok());
             let j = i.bytes_usize();
             let offset = alloc
-                .inspect_with_uninit_and_ptr_outside_interpreter(j..j + ptr_size.bytes_usize());
+                .inspect_with_uninit_and_ptr_outside_interpreter(j..j + ptr_stride.bytes_usize());
             let offset = read_target_uint(tcx.data_layout.endian, offset).unwrap();
             let offset = Size::from_bytes(offset);
             let provenance_width = |bytes| bytes * 3;
             let ptr = Pointer::new(prov, offset);
             let mut target = format!("{ptr:?}");
-            if target.len() > provenance_width(ptr_size.bytes_usize() - 1) {
+            if target.len() > provenance_width(ptr_stride.bytes_usize() - 1) {
                 // This is too long, try to save some space.
                 target = format!("{ptr:#?}");
             }
-            if ((i - line_start) + ptr_size).bytes_usize() > BYTES_PER_LINE {
+            if ((i - line_start) + ptr_stride).bytes_usize() > BYTES_PER_LINE {
                 // This branch handles the situation where a provenance starts in the current line
                 // but ends in the next one.
                 let remainder = Size::from_bytes(BYTES_PER_LINE) - (i - line_start);
-                let overflow = ptr_size - remainder;
+                let overflow = ptr_stride - remainder;
                 let remainder_width = provenance_width(remainder.bytes_usize()) - 2;
                 let overflow_width = provenance_width(overflow.bytes_usize() - 1) + 1;
                 ascii.push('╾'); // HEAVY LEFT AND LIGHT RIGHT
@@ -1777,19 +1777,19 @@ pub fn write_allocation_bytes<'tcx, Prov: Provenance, Extra, Bytes: AllocBytes>(
                     ascii.push('─');
                 }
                 ascii.push('╼'); // LIGHT LEFT AND HEAVY RIGHT
-                i += ptr_size;
+                i += ptr_stride;
                 continue;
             } else {
                 // This branch handles a provenance that starts and ends in the current line.
-                let provenance_width = provenance_width(ptr_size.bytes_usize() - 1);
+                let provenance_width = provenance_width(ptr_stride.bytes_usize() - 1);
                 oversized_ptr(&mut target, provenance_width);
                 ascii.push('╾');
                 write!(w, "╾{target:─^provenance_width$}╼")?;
-                for _ in 0..ptr_size.bytes() - 2 {
+                for _ in 0..ptr_stride.bytes() - 2 {
                     ascii.push('─');
                 }
                 ascii.push('╼');
-                i += ptr_size;
+                i += ptr_stride;
             }
         } else if let Some(prov) = alloc.provenance().get(i, &tcx) {
             // Memory with provenance must be defined

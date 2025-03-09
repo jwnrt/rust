@@ -419,6 +419,17 @@ impl TargetDataLayout {
         }
     }
 
+    #[inline]
+    pub fn ptr_strided_integer(&self) -> Integer {
+        use Integer::*;
+        match self.pointer_stride.bits() {
+            16 => I16,
+            32 => I32,
+            64 => I64,
+            bits => panic!("ptr_strided_integer: unknown pointer bit stride {bits}"),
+        }
+    }
+
     /// psABI-mandated alignment for a vector type, if any
     #[inline]
     fn cabi_vector_align(&self, vec_size: Size) -> Option<AbiAndPrefAlign> {
@@ -1084,7 +1095,7 @@ impl Primitive {
             // FIXME(erikdesjardins): ignoring address space is technically wrong, pointers in
             // different address spaces can have different sizes
             // (but TargetDataLayout doesn't currently parse that part of the DL string)
-            Pointer(_) => dl.pointer_size,
+            Pointer(_) => dl.pointer_stride,
         }
     }
 

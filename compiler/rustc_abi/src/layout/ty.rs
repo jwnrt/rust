@@ -114,7 +114,9 @@ impl<'a> Layout<'a> {
     /// Currently, that means that the type is pointer-sized, pointer-aligned,
     /// and has a initialized (non-union), scalar ABI.
     pub fn is_pointer_like(self, data_layout: &TargetDataLayout) -> bool {
-        self.size() == data_layout.pointer_size
+        // FIXME(jwnrt): this marker trait probably doesn't make sense now that `usize`
+        // and pointer types can be different.
+        (self.size() == data_layout.pointer_size || self.size() == data_layout.pointer_stride)
             && self.align().abi == data_layout.pointer_align.abi
             && matches!(self.backend_repr(), BackendRepr::Scalar(Scalar::Initialized { .. }))
     }

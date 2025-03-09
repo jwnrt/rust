@@ -316,7 +316,7 @@ fn layout_of_uncached<'tcx>(
                     ty::Foreign(..) => {
                         return Ok(tcx.mk_layout(LayoutData::scalar(cx, data_ptr)));
                     }
-                    ty::Slice(_) | ty::Str => scalar_unit(Int(dl.ptr_sized_integer(), false)),
+                    ty::Slice(_) | ty::Str => scalar_unit(Int(dl.ptr_strided_integer(), false)),
                     ty::Dynamic(..) => {
                         let mut vtable = scalar_unit(Pointer(AddressSpace::DATA));
                         vtable.valid_range_mut().start = 1;

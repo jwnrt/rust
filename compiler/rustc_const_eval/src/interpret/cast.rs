@@ -210,8 +210,8 @@ impl<'tcx, M: Machine<'tcx>> InterpCx<'tcx, M> {
             return interp_ok(ImmTy::from_immediate(**src, cast_to));
         } else {
             // Casting the metadata away from a wide ptr.
-            assert_eq!(src.layout.size, 2 * self.pointer_size());
-            assert_eq!(cast_to.size, self.pointer_size());
+            assert_eq!(src.layout.size, self.pointer_stride() + self.pointer_size());
+            assert_eq!(cast_to.size, self.pointer_stride());
             assert!(src.layout.ty.is_raw_ptr());
             return match **src {
                 Immediate::ScalarPair(data, _) => interp_ok(ImmTy::from_scalar(data, cast_to)),

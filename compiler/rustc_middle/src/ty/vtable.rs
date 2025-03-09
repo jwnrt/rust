@@ -1,5 +1,6 @@
 use std::fmt;
 
+use rustc_abi::Size;
 use rustc_ast::Mutability;
 use rustc_macros::HashStable;
 use rustc_type_ir::elaborate;
@@ -106,48 +107,50 @@ pub(super) fn vtable_allocation_provider<'tcx>(
     let size = layout.size.bytes();
     let align = layout.align.abi.bytes();
 
+    let ptr_stride = tcx.data_layout.pointer_stride;
     let ptr_size = tcx.data_layout.pointer_size;
     let ptr_align = tcx.data_layout.pointer_align.abi;
 
-    let vtable_size = ptr_size * u64::try_from(vtable_entries.len()).unwrap();
+    let vtable_size = ptr_stride * u64::try_from(vtable_entries.len()).unwrap();
     let mut vtable = Allocation::new(vtable_size, ptr_align, AllocInit::Uninit);
 
     // No need to do any alignment checks on the memory accesses below, because we know the
     // allocation is correctly aligned as we created it above. Also we're only offsetting by
     // multiples of `ptr_align`, which means that it will stay aligned to `ptr_align`.
 
-    for (idx, entry) in vtable_entries.iter().enumerate() {
-        let idx: u64 = u64::try_from(idx).unwrap();
-        let scalar = match *entry {
+    let mut pos = Size::ZERO;
+    for entry in vtable_entries.iter() {
+        let (scalar, size) = match *entry {
             VtblEntry::MetadataDropInPlace => {
                 if ty.needs_drop(tcx, ty::TypingEnv::fully_monomorphized()) {
                     let instance = ty::Instance::resolve_drop_in_place(tcx, ty);
                     let fn_alloc_id = tcx.reserve_and_set_fn_alloc(instance, CTFE_ALLOC_SALT);
                     let fn_ptr = Pointer::from(fn_alloc_id);
-                    Scalar::from_pointer(fn_ptr, &tcx)
+                    (Scalar::from_pointer(fn_ptr, &tcx), ptr_stride)
                 } else {
-                    Scalar::from_maybe_pointer(Pointer::null(), &tcx)
+                    (Scalar::from_maybe_pointer(Pointer::null(), &tcx), ptr_stride)
                 }
             }
-            VtblEntry::MetadataSize => Scalar::from_uint(size, ptr_size),
-            VtblEntry::MetadataAlign => Scalar::from_uint(align, ptr_size),
+            VtblEntry::MetadataSize => (Scalar::from_uint(size, ptr_size), ptr_size),
+            VtblEntry::MetadataAlign => (Scalar::from_uint(align, ptr_size), ptr_size),
             VtblEntry::Vacant => continue,
             VtblEntry::Method(instance) => {
                 // Prepare the fn ptr we write into the vtable.
                 let fn_alloc_id = tcx.reserve_and_set_fn_alloc(instance, CTFE_ALLOC_SALT);
                 let fn_ptr = Pointer::from(fn_alloc_id);
-                Scalar::from_pointer(fn_ptr, &tcx)
+                (Scalar::from_pointer(fn_ptr, &tcx), ptr_stride)
             }
             VtblEntry::TraitVPtr(trait_ref) => {
                 let super_trait_ref = ty::ExistentialTraitRef::erase_self_ty(tcx, trait_ref);
                 let supertrait_alloc_id = tcx.vtable_allocation((ty, Some(super_trait_ref)));
                 let vptr = Pointer::from(supertrait_alloc_id);
-                Scalar::from_pointer(vptr, &tcx)
+                (Scalar::from_pointer(vptr, &tcx), ptr_stride)
             }
         };
         vtable
-            .write_scalar(&tcx, alloc_range(ptr_size * idx, ptr_size), scalar)
+            .write_scalar(&tcx, alloc_range(pos, size), scalar)
             .expect("failed to build vtable representation");
+        pos += size;
     }
 
     vtable.mutability = Mutability::Not;

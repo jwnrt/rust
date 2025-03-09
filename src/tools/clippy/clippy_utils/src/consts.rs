@@ -917,12 +917,13 @@ fn mir_is_empty<'tcx>(tcx: TyCtxt<'tcx>, result: mir::Const<'tcx>) -> Option<boo
                     // [`ConstValue::try_get_slice_bytes_for_diagnostics`].
                     let a = tcx.global_alloc(alloc_id).unwrap_memory().inner();
                     let ptr_size = tcx.data_layout.pointer_size;
-                    if a.size() < offset + 2 * ptr_size {
+                    let ptr_stride = tcx.data_layout.pointer_stride;
+                    if a.size() < offset + ptr_stride + ptr_size {
                         // (partially) dangling reference
                         return None;
                     }
                     let len = a
-                        .read_scalar(&tcx, alloc_range(offset + ptr_size, ptr_size), false)
+                        .read_scalar(&tcx, alloc_range(offset + ptr_stride, ptr_size), false)
                         .ok()?
                         .to_target_usize(&tcx)
                         .discard_err()?;

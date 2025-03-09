@@ -475,7 +475,7 @@ impl<'ll, 'tcx> IntrinsicCallBuilderMethods<'tcx> for Builder<'_, 'll, 'tcx> {
                         // For rusty ABIs, small aggregates are actually passed
                         // as `RegKind::Integer` (see `FnAbi::adjust_for_abi`),
                         // so we re-use that same threshold here.
-                        layout.size() <= self.data_layout().pointer_size * 2
+                        layout.size() <= self.data_layout().pointer_stride * 2
                     }
                 };
 
@@ -782,9 +782,9 @@ fn codegen_msvc_try<'ll>(
         //      }
         //
         // More information can be found in libstd's seh.rs implementation.
-        let ptr_size = bx.tcx().data_layout.pointer_size;
+        let ptr_stride = bx.tcx().data_layout.pointer_stride;
         let ptr_align = bx.tcx().data_layout.pointer_align.abi;
-        let slot = bx.alloca(ptr_size, ptr_align);
+        let slot = bx.alloca(ptr_stride, ptr_align);
         let try_func_ty = bx.type_func(&[bx.type_ptr()], bx.type_void());
         bx.invoke(try_func_ty, None, None, try_func, &[data], normal, catchswitch, None, None);
 
@@ -1055,12 +1055,13 @@ fn codegen_emcc_try<'ll>(
 
         // We need to pass two values to catch_func (ptr and is_rust_panic), so
         // create an alloca and pass a pointer to that.
+        let ptr_stride = bx.tcx().data_layout.pointer_stride;
         let ptr_size = bx.tcx().data_layout.pointer_size;
         let ptr_align = bx.tcx().data_layout.pointer_align.abi;
         let i8_align = bx.tcx().data_layout.i8_align.abi;
         // Required in order for there to be no padding between the fields.
         assert!(i8_align <= ptr_align);
-        let catch_data = bx.alloca(2 * ptr_size, ptr_align);
+        let catch_data = bx.alloca(ptr_stride + ptr_size, ptr_align);
         bx.store(ptr, catch_data, ptr_align);
         let catch_data_1 = bx.inbounds_ptradd(catch_data, bx.const_usize(ptr_size.bytes()));
         bx.store(is_rust_panic, catch_data_1, i8_align);

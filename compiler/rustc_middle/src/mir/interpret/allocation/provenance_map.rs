@@ -68,10 +68,10 @@ impl ProvenanceMap {
 
 impl<Prov: Provenance> ProvenanceMap<Prov> {
     fn adjusted_range_ptrs(range: AllocRange, cx: &impl HasDataLayout) -> Range<Size> {
-        // We have to go back `pointer_size - 1` bytes, as that one would still overlap with
+        // We have to go back `pointer_stride - 1` bytes, as that one would still overlap with
         // the beginning of this range.
         let adjusted_start = Size::from_bytes(
-            range.start.bytes().saturating_sub(cx.data_layout().pointer_size.bytes() - 1),
+            range.start.bytes().saturating_sub(cx.data_layout().pointer_stride.bytes() - 1),
         );
         adjusted_start..range.end()
     }
@@ -142,7 +142,7 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
     }
 
     pub fn insert_ptr(&mut self, offset: Size, prov: Prov, cx: &impl HasDataLayout) {
-        debug_assert!(self.range_empty(alloc_range(offset, cx.data_layout().pointer_size), cx));
+        debug_assert!(self.range_empty(alloc_range(offset, cx.data_layout().pointer_stride), cx));
         self.ptrs.insert(offset, prov);
     }
 
@@ -174,7 +174,7 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
             let provenance = self.range_ptrs_get(range, cx);
             (
                 provenance.first().unwrap().0,
-                provenance.last().unwrap().0 + cx.data_layout().pointer_size,
+                provenance.last().unwrap().0 + cx.data_layout().pointer_stride,
             )
         };
 
@@ -192,7 +192,7 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
             }
         }
         if last > end {
-            let begin_of_last = last - cx.data_layout().pointer_size;
+            let begin_of_last = last - cx.data_layout().pointer_stride;
             if !Prov::OFFSET_IS_ADDR {
                 // We can't split up the provenance into less than a pointer.
                 return Err(AllocError::OverwritePartialPointer(begin_of_last));
@@ -255,15 +255,15 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
             // shift offsets from source allocation to destination allocation
             (offset - src.start) + dest_offset // `Size` operations
         };
-        let ptr_size = cx.data_layout().pointer_size;
+        let ptr_stride = cx.data_layout().pointer_stride;
 
         // # Pointer-sized provenances
         // Get the provenances that are entirely within this range.
         // (Different from `range_get_ptrs` which asks if they overlap the range.)
         // Only makes sense if we are copying at least one pointer worth of bytes.
         let mut dest_ptrs_box = None;
-        if src.size >= ptr_size {
-            let adjusted_end = Size::from_bytes(src.end().bytes() - (ptr_size.bytes() - 1));
+        if src.size >= ptr_stride {
+            let adjusted_end = Size::from_bytes(src.end().bytes() - (ptr_stride.bytes() - 1));
             let ptrs = self.ptrs.range(src.start..adjusted_end);
             // If `count` is large, this is rather wasteful -- we are allocating a big array here, which
             // is mostly filled with redundant information since it's just N copies of the same `Prov`s
@@ -301,7 +301,7 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
             if let Some(entry) = begin_overlap {
                 trace!("start overlapping entry: {entry:?}");
                 // For really small copies, make sure we don't run off the end of the `src` range.
-                let entry_end = cmp::min(entry.0 + ptr_size, src.end());
+                let entry_end = cmp::min(entry.0 + ptr_stride, src.end());
                 for offset in src.start..entry_end {
                     bytes.push((offset, entry.1));
                 }

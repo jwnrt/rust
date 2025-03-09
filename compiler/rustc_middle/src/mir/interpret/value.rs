@@ -103,7 +103,7 @@ impl<Prov> From<ScalarInt> for Scalar<Prov> {
 impl<Prov> Scalar<Prov> {
     #[inline(always)]
     pub fn from_pointer(ptr: Pointer<Prov>, cx: &impl HasDataLayout) -> Self {
-        Scalar::Ptr(ptr, u8::try_from(cx.pointer_size().bytes()).unwrap())
+        Scalar::Ptr(ptr, u8::try_from(cx.pointer_stride().bytes()).unwrap())
     }
 
     /// Create a Scalar from a pointer with an `Option<_>` provenance (where `None` represents a
@@ -112,14 +112,14 @@ impl<Prov> Scalar<Prov> {
         match ptr.into_parts() {
             (Some(prov), offset) => Scalar::from_pointer(Pointer::new(prov, offset), cx),
             (None, offset) => {
-                Scalar::Int(ScalarInt::try_from_uint(offset.bytes(), cx.pointer_size()).unwrap())
+                Scalar::Int(ScalarInt::try_from_uint(offset.bytes(), cx.pointer_stride()).unwrap())
             }
         }
     }
 
     #[inline]
     pub fn null_ptr(cx: &impl HasDataLayout) -> Self {
-        Scalar::Int(ScalarInt::null(cx.pointer_size()))
+        Scalar::Int(ScalarInt::null(cx.pointer_stride()))
     }
 
     #[inline]
@@ -270,7 +270,7 @@ impl<Prov> Scalar<Prov> {
 impl<'tcx, Prov: Provenance> Scalar<Prov> {
     pub fn to_pointer(self, cx: &impl HasDataLayout) -> InterpResult<'tcx, Pointer<Option<Prov>>> {
         match self
-            .to_bits_or_ptr_internal(cx.pointer_size())
+            .to_bits_or_ptr_internal(cx.pointer_stride())
             .map_err(|s| err_ub!(ScalarSizeMismatch(s)))?
         {
             Right(ptr) => interp_ok(ptr.into()),
@@ -296,6 +296,7 @@ impl<'tcx, Prov: Provenance> Scalar<Prov> {
             Scalar::Int(int) => Ok(int),
             Scalar::Ptr(ptr, sz) => {
                 if Prov::OFFSET_IS_ADDR {
+                    // FIXME(jwnrt): do we need to shrink to just the address on this usize cast?
                     Ok(ScalarInt::try_from_uint(ptr.offset.bytes(), Size::from_bytes(sz)).unwrap())
                 } else {
                     // We know `offset` is relative, since `OFFSET_IS_ADDR == false`.

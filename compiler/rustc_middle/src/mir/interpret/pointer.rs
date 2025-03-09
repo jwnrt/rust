@@ -19,6 +19,18 @@ pub trait PointerArithmetic: HasDataLayout {
         self.data_layout().pointer_size
     }
 
+    /// Size that a pointer fully occupies including extension data.
+    ///
+    /// Normally equal to the target's `pointer_width` except on systems like CHERI
+    /// where pointers are extended with capability metadata.
+    ///
+    /// The terminology comes from Swift where it refers to the size of some data
+    /// plus padding.
+    #[inline(always)]
+    fn pointer_stride(&self) -> Size {
+        self.data_layout().pointer_stride
+    }
+
     #[inline(always)]
     fn max_size_of_val(&self) -> Size {
         Size::from_bytes(self.target_isize_max())

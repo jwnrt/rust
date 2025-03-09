@@ -47,7 +47,7 @@ pub(crate) fn const_alloc_to_llvm<'ll>(
     }
     let mut llvals = Vec::with_capacity(alloc.provenance().ptrs().len() + 1);
     let dl = cx.data_layout();
-    let pointer_size = dl.pointer_size.bytes() as usize;
+    let pointer_stride = dl.pointer_stride.bytes() as usize;
 
     // Note: this function may call `inspect_with_uninit_and_ptr_outside_interpreter`, so `range`
     // must be within the bounds of `alloc` and not contain or overlap a pointer provenance.
@@ -104,7 +104,8 @@ pub(crate) fn const_alloc_to_llvm<'ll>(
             // This `inspect` is okay since it is within the bounds of the allocation, it doesn't
             // affect interpreter execution (we inspect the result after interpreter execution),
             // and we properly interpret the provenance as a relocation pointer offset.
-            alloc.inspect_with_uninit_and_ptr_outside_interpreter(offset..(offset + pointer_size)),
+            alloc
+                .inspect_with_uninit_and_ptr_outside_interpreter(offset..(offset + pointer_stride)),
         )
         .expect("const_alloc_to_llvm: could not read relocation pointer")
             as u64;
@@ -119,7 +120,7 @@ pub(crate) fn const_alloc_to_llvm<'ll>(
             },
             cx.type_ptr_ext(address_space),
         ));
-        next_offset = offset + pointer_size;
+        next_offset = offset + pointer_stride;
     }
     if alloc.len() >= next_offset {
         let range = next_offset..alloc.len();

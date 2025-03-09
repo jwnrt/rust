@@ -85,7 +85,7 @@ pub struct Allocation<Prov: Provenance = CtfeProvenance, Extra = (), Bytes = Box
     bytes: Bytes,
     /// Maps from byte addresses to extra provenance data for each pointer.
     /// Only the first byte of a pointer is inserted into the map; i.e.,
-    /// every entry in this map applies to `pointer_size` consecutive bytes starting
+    /// every entry in this map applies to `pointer_stride` consecutive bytes starting
     /// at the given offset.
     provenance: ProvenanceMap<Prov>,
     /// Denotes which part of this allocation is initialized.
@@ -383,11 +383,11 @@ impl Allocation {
         let mut bytes = alloc_bytes(&*self.bytes, self.align)?;
         // Adjust provenance of pointers stored in this allocation.
         let mut new_provenance = Vec::with_capacity(self.provenance.ptrs().len());
-        let ptr_size = cx.data_layout().pointer_size.bytes_usize();
+        let ptr_stride = cx.data_layout().pointer_stride.bytes_usize();
         let endian = cx.data_layout().endian;
         for &(offset, alloc_id) in self.provenance.ptrs().iter() {
             let idx = offset.bytes_usize();
-            let ptr_bytes = &mut bytes[idx..idx + ptr_size];
+            let ptr_bytes = &mut bytes[idx..idx + ptr_stride];
             let bits = read_target_uint(endian, ptr_bytes).unwrap();
             let (ptr_prov, ptr_offset) =
                 adjust_ptr(Pointer::new(alloc_id, Size::from_bytes(bits)))?.into_parts();
@@ -475,7 +475,7 @@ impl<Prov: Provenance, Extra, Bytes: AllocBytes> Allocation<Prov, Extra, Bytes> 
                 .copied()
                 .expect("there must be provenance somewhere here");
             let start = offset.max(range.start); // the pointer might begin before `range`!
-            let end = (offset + cx.pointer_size()).min(range.end()); // the pointer might end after `range`!
+            let end = (offset + cx.pointer_stride()).min(range.end()); // the pointer might end after `range`!
             return Err(AllocError::ReadPointerAsInt(Some(BadBytesAccess {
                 access: range,
                 bad: AllocRange::from(start..end),
@@ -573,7 +573,7 @@ impl<Prov: Provenance, Extra, Bytes: AllocBytes> Allocation<Prov, Extra, Bytes> 
         let bits = read_target_uint(cx.data_layout().endian, bytes).unwrap();
 
         if read_provenance {
-            assert_eq!(range.size, cx.data_layout().pointer_size);
+            assert_eq!(range.size, cx.data_layout().pointer_stride);
 
             // When reading data with provenance, the easy case is finding provenance exactly where we
             // are reading, then we can put data and provenance back together and return that.
@@ -646,7 +646,7 @@ impl<Prov: Provenance, Extra, Bytes: AllocBytes> Allocation<Prov, Extra, Bytes> 
 
         // See if we have to also store some provenance.
         if let Some(provenance) = provenance {
-            assert_eq!(range.size, cx.data_layout().pointer_size);
+            assert_eq!(range.size, cx.data_layout().pointer_stride);
             self.provenance.insert_ptr(range.start, provenance, cx);
         }
 

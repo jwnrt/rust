@@ -462,7 +462,7 @@ pub trait EvalContextExt<'tcx>: crate::MiriInterpCxExt<'tcx> {
                 // pointers we need to retag, so we can stop recursion early.
                 // This optimization is crucial for ZSTs, because they can contain way more fields
                 // than we can ever visit.
-                if place.layout.is_sized() && place.layout.size < self.ecx.pointer_size() {
+                if place.layout.is_sized() && place.layout.size < self.ecx.pointer_stride() {
                     return interp_ok(());
                 }
 

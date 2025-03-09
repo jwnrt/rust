@@ -1748,7 +1748,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
             ty::Char if char::try_from(int).is_ok() => {
                 p!(write("{:?}", char::try_from(int).unwrap()))
             }
-            // Pointer types
+            // Pointer types (extension data is not printed, e.g. CHERI metadata)
             ty::Ref(..) | ty::RawPtr(_, _) | ty::FnPtr(..) => {
                 let data = int.to_bits(self.tcx().data_layout.pointer_size);
                 self.typed_value(
