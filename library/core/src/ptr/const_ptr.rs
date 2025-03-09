@@ -166,9 +166,12 @@ impl<T: ?Sized> *const T {
         // A pointer-to-integer transmute currently has exactly the right semantics: it returns the
         // address without exposing the provenance. Note that this is *not* a stable guarantee about
         // transmute semantics, it relies on sysroot crates having special status.
+        let laundered_ptr = self.cast::<()>();
         // SAFETY: Pointer-to-integer transmutes are valid (if you are okay with losing the
         // provenance).
-        unsafe { mem::transmute(self.cast::<()>()) }
+        let addr: *const usize = unsafe { mem::transmute(&raw const laundered_ptr) };
+        // SAFETY: `usize` must be <= pointer size and have the same alignment.
+        unsafe { *addr }
     }
 
     /// Exposes the ["provenance"][crate::ptr#provenance] part of the pointer for future use in
