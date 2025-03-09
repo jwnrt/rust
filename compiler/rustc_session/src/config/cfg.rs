@@ -138,6 +138,7 @@ pub(crate) fn disallow_cfgs(sess: &Session, user_cfgs: &Cfg) {
             | (sym::target_family, Some(_))
             | (sym::target_os, Some(_))
             | (sym::target_pointer_width, Some(_))
+            | (sym::target_pointer_stride, Some(_))
             | (sym::target_vendor, None | Some(_))
             | (sym::target_has_atomic, Some(_))
             | (sym::target_has_atomic_equal_alignment, Some(_))
@@ -281,6 +282,7 @@ pub(crate) fn default_configuration(sess: &Session) -> Cfg {
 
     ins_str!(sym::target_os, &sess.target.os);
     ins_sym!(sym::target_pointer_width, sym::integer(sess.target.pointer_width));
+    ins_sym!(sym::target_pointer_stride, sym::integer(sess.target.pointer_stride()));
 
     if sess.opts.unstable_opts.has_thread_local.unwrap_or(sess.target.has_thread_local) {
         ins_none!(sym::target_thread_local);
@@ -395,7 +397,7 @@ impl CheckCfg {
 
         // sym::target_*
         {
-            const VALUES: [&Symbol; 8] = [
+            const VALUES: [&Symbol; 9] = [
                 &sym::target_abi,
                 &sym::target_arch,
                 &sym::target_endian,
@@ -403,6 +405,7 @@ impl CheckCfg {
                 &sym::target_family,
                 &sym::target_os,
                 &sym::target_pointer_width,
+                &sym::target_pointer_stride,
                 &sym::target_vendor,
             ];
 
@@ -426,6 +429,7 @@ impl CheckCfg {
                     Some(values_target_family),
                     Some(values_target_os),
                     Some(values_target_pointer_width),
+                    Some(values_target_pointer_stride),
                     Some(values_target_vendor),
                 ] = self.expecteds.get_disjoint_mut(VALUES)
                 else {
@@ -442,6 +446,7 @@ impl CheckCfg {
                     );
                     values_target_os.insert(Symbol::intern(&target.options.os));
                     values_target_pointer_width.insert(sym::integer(target.pointer_width));
+                    values_target_pointer_stride.insert(sym::integer(target.pointer_stride()));
                     values_target_vendor.insert(Symbol::intern(&target.options.vendor));
                 }
             }

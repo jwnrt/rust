@@ -70,6 +70,8 @@
     //~^ WARN unexpected `cfg` condition value
     target_os = "_UNEXPECTED_VALUE",
     //~^ WARN unexpected `cfg` condition value
+    target_pointer_stride = "_UNEXPECTED_VALUE",
+    //~^ WARN unexpected `cfg` condition value
     target_pointer_width = "_UNEXPECTED_VALUE",
     //~^ WARN unexpected `cfg` condition value
     target_thread_local = "_UNEXPECTED_VALUE",

@@ -127,6 +127,7 @@ As of `2025-01-02T`, the list of known names is as follows:
  - `target_has_atomic_equal_alignment`
  - `target_has_atomic_load_store`
  - `target_os`
+ - `target_pointer_stride`
  - `target_pointer_width`
  - `target_thread_local`
  - `target_vendor`
