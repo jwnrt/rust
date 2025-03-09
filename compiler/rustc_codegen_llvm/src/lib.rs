@@ -117,7 +117,7 @@ impl ExtraBackendMethods for LlvmCodegenBackend {
         let cx = SimpleCx::new(
             module_llvm.llmod(),
             &module_llvm.llcx,
-            tcx.data_layout.pointer_size,
+            tcx.data_layout.address_size,
             tcx.data_layout.data_address_space,
         );
         unsafe {

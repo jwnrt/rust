@@ -94,8 +94,8 @@ fn remove_successors_from_switch<'tcx>(
 
     let discr_ty = discr.ty(body, tcx);
     let discr_size = Size::from_bits(match discr_ty.kind() {
-        ty::Uint(uint) => uint.normalize(tcx.sess.target.pointer_width).bit_width().unwrap(),
-        ty::Int(int) => int.normalize(tcx.sess.target.pointer_width).bit_width().unwrap(),
+        ty::Uint(uint) => uint.normalize(tcx.sess.target.address_width()).bit_width().unwrap(),
+        ty::Int(int) => int.normalize(tcx.sess.target.address_width()).bit_width().unwrap(),
         ty::Char => 32,
         ty::Bool => 1,
         other => bug!("unhandled type: {:?}", other),

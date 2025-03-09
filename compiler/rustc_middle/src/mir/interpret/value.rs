@@ -167,7 +167,7 @@ impl<Prov> Scalar<Prov> {
 
     #[inline]
     pub fn from_target_usize(i: u64, cx: &impl HasDataLayout) -> Self {
-        Self::from_uint(i, cx.data_layout().pointer_size)
+        Self::from_uint(i, cx.data_layout().address_size)
     }
 
     #[inline]
@@ -205,7 +205,7 @@ impl<Prov> Scalar<Prov> {
 
     #[inline]
     pub fn from_target_isize(i: i64, cx: &impl HasDataLayout) -> Self {
-        Self::from_int(i, cx.data_layout().pointer_size)
+        Self::from_int(i, cx.data_layout().address_size)
     }
 
     #[inline]
@@ -296,6 +296,7 @@ impl<'tcx, Prov: Provenance> Scalar<Prov> {
             Scalar::Int(int) => Ok(int),
             Scalar::Ptr(ptr, sz) => {
                 if Prov::OFFSET_IS_ADDR {
+                    // FIXME(jwnrt): do we need to shrink to just the address on this usize cast?
                     Ok(ScalarInt::try_from_uint(ptr.offset.bytes(), Size::from_bytes(sz)).unwrap())
                 } else {
                     // We know `offset` is relative, since `OFFSET_IS_ADDR == false`.
@@ -390,10 +391,10 @@ impl<'tcx, Prov: Provenance> Scalar<Prov> {
         self.to_uint(Size::from_bits(128))
     }
 
-    /// Converts the scalar to produce a machine-pointer-sized unsigned integer.
+    /// Converts the scalar to produce a machine-address-sized unsigned integer.
     /// Fails if the scalar is a pointer.
     pub fn to_target_usize(self, cx: &impl HasDataLayout) -> InterpResult<'tcx, u64> {
-        let b = self.to_uint(cx.data_layout().pointer_size)?;
+        let b = self.to_uint(cx.data_layout().address_size)?;
         interp_ok(u64::try_from(b).unwrap())
     }
 
@@ -430,10 +431,10 @@ impl<'tcx, Prov: Provenance> Scalar<Prov> {
         self.to_int(Size::from_bits(128))
     }
 
-    /// Converts the scalar to produce a machine-pointer-sized signed integer.
+    /// Converts the scalar to produce a machine-address-sized signed integer.
     /// Fails if the scalar is a pointer.
     pub fn to_target_isize(self, cx: &impl HasDataLayout) -> InterpResult<'tcx, i64> {
-        let b = self.to_int(cx.data_layout().pointer_size)?;
+        let b = self.to_int(cx.data_layout().address_size)?;
         interp_ok(i64::try_from(b).unwrap())
     }
 

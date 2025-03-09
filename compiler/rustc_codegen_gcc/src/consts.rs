@@ -346,7 +346,7 @@ pub fn const_alloc_to_gcc<'gcc>(
             ),
             abi::Scalar::Initialized {
                 value: Primitive::Pointer(address_space),
-                valid_range: WrappingRange::full(dl.pointer_size),
+                valid_range: WrappingRange::full(dl.address_size),
             },
             cx.type_i8p_ext(address_space),
         ));

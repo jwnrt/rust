@@ -601,7 +601,7 @@ impl<'ll, 'tcx> CodegenCx<'ll, 'tcx> {
                 scx: SimpleCx::new(
                     llmod,
                     llcx,
-                    tcx.data_layout.pointer_size,
+                    tcx.data_layout.address_size,
                     tcx.data_layout.data_address_space,
                 ),
                 use_dll_storage_attrs,
@@ -665,10 +665,10 @@ impl<'ll> SimpleCx<'ll> {
     pub(crate) fn new(
         llmod: &'ll llvm::Module,
         llcx: &'ll llvm::Context,
-        pointer_size: Size,
+        address_size: Size,
         address_space: AddressSpace,
     ) -> Self {
-        Self(SCx { llmod, llcx, pointer_size, address_space }, PhantomData)
+        Self(SCx { llmod, llcx, address_size, address_space }, PhantomData)
     }
 }
 

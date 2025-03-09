@@ -739,7 +739,7 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
                         ty::OutlivesPredicate(a, b_region),
                     ))),
                 ),
-                // Enforce that the type is `usize`/pointer-sized.
+                // Enforce that the type is `usize`/address-sized.
                 Obligation::new(
                     self.tcx,
                     self.cause.clone(),

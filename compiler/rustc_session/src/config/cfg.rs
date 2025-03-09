@@ -278,7 +278,8 @@ pub(crate) fn default_configuration(sess: &Session) -> Cfg {
                 ins_sym!(sym::target_has_atomic_load_store, sym);
             };
             insert_atomic(sym::integer(i), align);
-            if sess.target.pointer_width as u64 == i {
+            if sess.target.address_width() as u64 == i {
+                // FIXME(jwnrt): will this align apply to `AtomicUsize` as well?
                 insert_atomic(sym::ptr, layout.pointer_align.abi);
             }
         }

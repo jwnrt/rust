@@ -16,7 +16,7 @@ use super::{AllocError, AllocRange, AllocResult, CtfeProvenance, Provenance, all
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 #[derive(HashStable)]
 pub struct ProvenanceMap<Prov = CtfeProvenance> {
-    /// `Provenance` in this map applies from the given offset for an entire pointer-size worth of
+    /// `Provenance` in this map applies from the given offset for an entire address-size worth of
     /// bytes. Two entries in this map are always at least a pointer size apart.
     ptrs: SortedMap<Size, Prov>,
     /// Provenance in this map only applies to the given single byte.
@@ -55,7 +55,7 @@ impl<Prov> ProvenanceMap<Prov> {
 }
 
 impl ProvenanceMap {
-    /// Give access to the ptr-sized provenances (which can also be thought of as relocations, and
+    /// Give access to the addr-sized provenances (which can also be thought of as relocations, and
     /// indeed that is how codegen treats them).
     ///
     /// Only exposed with `CtfeProvenance` provenance, since it panics if there is bytewise provenance.
@@ -76,7 +76,7 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
         adjusted_start..range.end()
     }
 
-    /// Returns all ptr-sized provenance in the given range.
+    /// Returns all addr-sized provenance in the given range.
     /// If the range has length 0, returns provenance that crosses the edge between `start-1` and
     /// `start`.
     pub(super) fn range_ptrs_get(
@@ -120,7 +120,7 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
         }
     }
 
-    /// Check if here is ptr-sized provenance at the given index.
+    /// Check if here is addr-sized provenance at the given index.
     /// Does not mean anything for bytewise provenance! But can be useful as an optimization.
     pub fn get_ptr(&self, offset: Size) -> Option<Prov> {
         self.ptrs.get(&offset).copied()
@@ -160,7 +160,7 @@ impl<Prov: Provenance> ProvenanceMap<Prov> {
             debug_assert!(self.bytes.is_none());
         }
 
-        // For the ptr-sized part, find the first (inclusive) and last (exclusive) byte of
+        // For the addr-sized part, find the first (inclusive) and last (exclusive) byte of
         // provenance that overlaps with the given range.
         let (first, last) = {
             // Find all provenance overlapping the given range.

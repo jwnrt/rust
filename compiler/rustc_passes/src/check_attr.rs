@@ -2127,7 +2127,7 @@ impl<'tcx> CheckAttrVisitor<'tcx> {
             // alignment greater than 2^29 not supported
             // alignment is too large for the current target
 
-            let max = Size::from_bits(self.tcx.sess.target.pointer_width).signed_int_max() as u64;
+            let max = Size::from_bits(self.tcx.sess.target.address_width()).signed_int_max() as u64;
             if align.bytes() > max {
                 self.dcx().emit_err(errors::InvalidReprAlignForTarget { span, size: max });
             }

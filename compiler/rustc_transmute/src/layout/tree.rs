@@ -291,7 +291,7 @@ pub(crate) mod rustc {
             }
 
             let target = cx.data_layout();
-            let pointer_size = target.pointer_size;
+            let address_size = target.address_size;
 
             match ty.kind() {
                 ty::Bool => Ok(Self::bool()),
@@ -302,12 +302,12 @@ pub(crate) mod rustc {
                 }
 
                 ty::Int(nty) => {
-                    let width = nty.normalize(pointer_size.bits() as _).bit_width().unwrap() / 8;
+                    let width = nty.normalize(address_size.bits() as _).bit_width().unwrap() / 8;
                     Ok(Self::number(width.try_into().unwrap()))
                 }
 
                 ty::Uint(nty) => {
-                    let width = nty.normalize(pointer_size.bits() as _).bit_width().unwrap() / 8;
+                    let width = nty.normalize(address_size.bits() as _).bit_width().unwrap() / 8;
                     Ok(Self::number(width.try_into().unwrap()))
                 }
 

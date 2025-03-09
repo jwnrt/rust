@@ -197,7 +197,7 @@ pub fn layout_of_ty_query(
                     dl,
                     Primitive::Int(
                         match i {
-                            IntTy::Isize => dl.ptr_sized_integer(),
+                            IntTy::Isize => dl.addr_sized_integer(),
                             IntTy::I8 => Integer::I8,
                             IntTy::I16 => Integer::I16,
                             IntTy::I32 => Integer::I32,
@@ -214,7 +214,7 @@ pub fn layout_of_ty_query(
                     dl,
                     Primitive::Int(
                         match i {
-                            UintTy::Usize => dl.ptr_sized_integer(),
+                            UintTy::Usize => dl.addr_sized_integer(),
                             UintTy::U8 => Integer::I8,
                             UintTy::U16 => Integer::I16,
                             UintTy::U32 => Integer::I32,

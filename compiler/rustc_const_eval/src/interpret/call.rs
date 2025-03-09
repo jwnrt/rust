@@ -222,7 +222,7 @@ impl<'tcx, M: Machine<'tcx>> InterpCx<'tcx, M> {
             return interp_ok(meta_ty(caller) == meta_ty(callee));
         }
 
-        // Compatible integer types (in particular, usize vs ptr-sized-u32/u64).
+        // Compatible integer types (in particular, usize vs addr-sized-u32/u64).
         // `char` counts as `u32.`
         let int_ty = |ty: Ty<'tcx>| {
             Some(match ty.kind() {

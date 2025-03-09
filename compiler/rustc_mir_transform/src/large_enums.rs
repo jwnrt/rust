@@ -206,7 +206,7 @@ impl EnumSizeOpt {
         }
 
         let data_layout = tcx.data_layout();
-        let ptr_sized_int = data_layout.ptr_sized_integer();
+        let ptr_sized_int = data_layout.addr_sized_integer();
         let target_bytes = ptr_sized_int.size().bytes() as usize;
         let mut data = vec![0; target_bytes * num_discrs];
 
@@ -239,7 +239,7 @@ impl EnumSizeOpt {
         }
         let alloc = interpret::Allocation::from_bytes(
             data,
-            tcx.data_layout.ptr_sized_integer().align(&tcx.data_layout).abi,
+            tcx.data_layout.addr_sized_integer().align(&tcx.data_layout).abi,
             Mutability::Not,
         );
         let alloc = tcx.reserve_and_set_memory_alloc(tcx.mk_const_alloc(alloc));

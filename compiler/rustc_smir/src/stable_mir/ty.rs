@@ -1234,7 +1234,7 @@ pub type InitMaskMaterialized = Vec<u64>;
 /// Stores the provenance information of pointers stored in memory.
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 pub struct ProvenanceMap {
-    /// Provenance in this map applies from the given offset for an entire pointer-size worth of
+    /// Provenance in this map applies from the given offset for an entire address-size worth of
     /// bytes. Two entries in this map are always at least a pointer size apart.
     pub ptrs: Vec<(Size, Prov)>,
 }

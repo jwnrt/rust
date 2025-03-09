@@ -130,7 +130,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
                 match name {
                     // Size is always <= isize::MAX.
                     sym::vtable_size => {
-                        let size_bound = bx.data_layout().ptr_sized_integer().signed_max() as u128;
+                        let size_bound = bx.data_layout().addr_sized_integer().signed_max() as u128;
                         bx.range_metadata(value, WrappingRange { start: 0, end: size_bound });
                     }
                     // Alignment is always nonzero.
@@ -553,10 +553,10 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
 fn int_type_width_signed(ty: Ty<'_>, tcx: TyCtxt<'_>) -> Option<(u64, bool)> {
     match ty.kind() {
         ty::Int(t) => {
-            Some((t.bit_width().unwrap_or(u64::from(tcx.sess.target.pointer_width)), true))
+            Some((t.bit_width().unwrap_or(u64::from(tcx.sess.target.address_width())), true))
         }
         ty::Uint(t) => {
-            Some((t.bit_width().unwrap_or(u64::from(tcx.sess.target.pointer_width)), false))
+            Some((t.bit_width().unwrap_or(u64::from(tcx.sess.target.address_width())), false))
         }
         _ => None,
     }

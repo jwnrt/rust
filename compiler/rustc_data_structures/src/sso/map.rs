@@ -7,7 +7,7 @@ use either::Either;
 
 use crate::fx::FxHashMap;
 
-/// For pointer-sized arguments arrays
+/// For address-sized arguments arrays
 /// are faster than set/map for up to 64
 /// arguments.
 ///

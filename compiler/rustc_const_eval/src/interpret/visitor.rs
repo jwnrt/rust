@@ -105,7 +105,7 @@ pub trait ValueVisitor<'tcx, M: Machine<'tcx>>: Sized {
             ty::Dynamic(data, _, ty::DynStar) => {
                 // DynStar types. Very different from a dyn type (but strangely part of the
                 // same variant in `TyKind`): These are pairs where the 2nd component is the
-                // vtable, and the first component is the data (which must be ptr-sized).
+                // vtable, and the first component is the data (which must be addr-sized).
 
                 // First make sure the vtable can be read at its type.
                 // The type of this vtable is fake, it claims to be a reference to some actual memory but that isn't true.

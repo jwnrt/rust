@@ -118,6 +118,7 @@ pub(super) fn vtable_allocation_provider<'tcx>(
     // No need to do any alignment checks on the memory accesses below, because we know the
     // allocation is correctly aligned as we created it above. Also we're only offsetting by
     // multiples of `ptr_align`, which means that it will stay aligned to `ptr_align`.
+    // FIXME(jwnrt): the above is no longer true.
 
     let mut pos = Size::ZERO;
     for entry in vtable_entries.iter() {

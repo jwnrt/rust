@@ -23,7 +23,7 @@ impl MachineInfo {
     }
 
     pub fn target_pointer_width() -> MachineSize {
-        with(|cx| cx.target_info().pointer_width)
+        with(|cx| cx.target_info().address_width)
     }
 
     pub fn target_address_width() -> MachineSize {

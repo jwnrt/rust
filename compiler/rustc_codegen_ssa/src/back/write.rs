@@ -361,7 +361,7 @@ pub struct CodegenContext<B: WriteBackendMethods> {
     pub target_is_like_aix: bool,
     pub split_debuginfo: rustc_target::spec::SplitDebuginfo,
     pub split_dwarf_kind: rustc_session::config::SplitDwarfKind,
-    pub pointer_size: Size,
+    pub address_size: Size,
     pub address_space: AddressSpace,
 
     /// All commandline args used to invoke the compiler, with @file args fully expanded.
@@ -1232,7 +1232,7 @@ fn start_executing_work<B: ExtraBackendMethods>(
         split_debuginfo: tcx.sess.split_debuginfo(),
         split_dwarf_kind: tcx.sess.opts.unstable_opts.split_dwarf_kind,
         parallel: backend.supports_parallel() && !sess.opts.unstable_opts.no_parallel_backend,
-        pointer_size: tcx.data_layout.pointer_size,
+        address_size: tcx.data_layout.address_size,
         address_space: tcx.data_layout.data_address_space,
         invocation_temp: sess.invocation_temp.clone(),
     };

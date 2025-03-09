@@ -76,7 +76,7 @@ pub(crate) fn try_new_allocation<'tcx>(
             allocation
                 .write_scalar(
                     &tables.tcx,
-                    alloc_range(tables.tcx.data_layout.pointer_size, scalar_meta.size()),
+                    alloc_range(tables.tcx.data_layout.address_size, scalar_meta.size()),
                     scalar_meta,
                 )
                 .map_err(|e| e.stable(tables))?;

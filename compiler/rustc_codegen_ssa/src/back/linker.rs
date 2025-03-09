@@ -1037,7 +1037,7 @@ impl<'a> Linker for MsvcLinker<'a> {
     }
 
     fn ehcont_guard(&mut self) {
-        if self.sess.target.pointer_width == 64 {
+        if self.sess.target.address_width() == 64 {
             self.link_arg("/guard:ehcont");
         }
     }

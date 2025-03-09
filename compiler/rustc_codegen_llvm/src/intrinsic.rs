@@ -1060,13 +1060,14 @@ fn codegen_emcc_try<'ll>(
         // We need to pass two values to catch_func (ptr and is_rust_panic), so
         // create an alloca and pass a pointer to that.
         let ptr_size = bx.tcx().data_layout.pointer_size;
+        let addr_size = bx.tcx().data_layout.address_size;
         let ptr_align = bx.tcx().data_layout.pointer_align.abi;
         let i8_align = bx.tcx().data_layout.i8_align.abi;
         // Required in order for there to be no padding between the fields.
         assert!(i8_align <= ptr_align);
-        let catch_data = bx.alloca(2 * ptr_size, ptr_align);
+        let catch_data = bx.alloca(ptr_size + addr_size, ptr_align);
         bx.store(ptr, catch_data, ptr_align);
-        let catch_data_1 = bx.inbounds_ptradd(catch_data, bx.const_usize(ptr_size.bytes()));
+        let catch_data_1 = bx.inbounds_ptradd(catch_data, bx.const_usize(addr_size.bytes()));
         bx.store(is_rust_panic, catch_data_1, i8_align);
 
         let catch_ty = bx.type_func(&[bx.type_ptr(), bx.type_ptr()], bx.type_void());
@@ -1188,9 +1189,9 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
     macro_rules! require_int_or_uint_ty {
         ($ty: expr, $diag: expr) => {
             match $ty {
-                ty::Int(i) => i.bit_width().unwrap_or_else(|| bx.data_layout().pointer_size.bits()),
+                ty::Int(i) => i.bit_width().unwrap_or_else(|| bx.data_layout().address_size.bits()),
                 ty::Uint(i) => {
-                    i.bit_width().unwrap_or_else(|| bx.data_layout().pointer_size.bits())
+                    i.bit_width().unwrap_or_else(|| bx.data_layout().address_size.bits())
                 }
                 _ => {
                     return_error!($diag);
@@ -1632,13 +1633,13 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
                 "v{}i{}",
                 vec_len,
                 // Normalize to prevent crash if v: IntTy::Isize
-                v.normalize(bx.target_spec().pointer_width).bit_width().unwrap()
+                v.normalize(bx.target_spec().address_width()).bit_width().unwrap()
             ),
             ty::Uint(v) => format!(
                 "v{}i{}",
                 vec_len,
                 // Normalize to prevent crash if v: UIntTy::Usize
-                v.normalize(bx.target_spec().pointer_width).bit_width().unwrap()
+                v.normalize(bx.target_spec().address_width()).bit_width().unwrap()
             ),
             ty::Float(v) => format!("v{}f{}", vec_len, v.bit_width()),
             ty::RawPtr(_, _) => format!("v{}p0", vec_len),
@@ -2145,10 +2146,10 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
                 } else {
                     let bitwidth = match in_elem.kind() {
                         ty::Int(i) => {
-                            i.bit_width().unwrap_or_else(|| bx.data_layout().pointer_size.bits())
+                            i.bit_width().unwrap_or_else(|| bx.data_layout().address_size.bits())
                         }
                         ty::Uint(i) => {
-                            i.bit_width().unwrap_or_else(|| bx.data_layout().pointer_size.bits())
+                            i.bit_width().unwrap_or_else(|| bx.data_layout().address_size.bits())
                         }
                         _ => return_error!(InvalidMonomorphization::UnsupportedSymbol {
                             span,
@@ -2320,15 +2321,15 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
         }
 
         let (in_style, in_width) = match in_elem.kind() {
-            // vectors of pointer-sized integers should've been
+            // vectors of address-sized integers should've been
             // disallowed before here, so this unwrap is safe.
             ty::Int(i) => (
                 Style::Int(Signed),
-                i.normalize(bx.tcx().sess.target.pointer_width).bit_width().unwrap(),
+                i.normalize(bx.tcx().sess.target.address_width()).bit_width().unwrap(),
             ),
             ty::Uint(u) => (
                 Style::Int(Unsigned),
-                u.normalize(bx.tcx().sess.target.pointer_width).bit_width().unwrap(),
+                u.normalize(bx.tcx().sess.target.address_width()).bit_width().unwrap(),
             ),
             ty::Float(f) => (Style::Float, f.bit_width()),
             _ => (Style::Unsupported, 0),
@@ -2336,11 +2337,11 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
         let (out_style, out_width) = match out_elem.kind() {
             ty::Int(i) => (
                 Style::Int(Signed),
-                i.normalize(bx.tcx().sess.target.pointer_width).bit_width().unwrap(),
+                i.normalize(bx.tcx().sess.target.address_width()).bit_width().unwrap(),
             ),
             ty::Uint(u) => (
                 Style::Int(Unsigned),
-                u.normalize(bx.tcx().sess.target.pointer_width).bit_width().unwrap(),
+                u.normalize(bx.tcx().sess.target.address_width()).bit_width().unwrap(),
             ),
             ty::Float(f) => (Style::Float, f.bit_width()),
             _ => (Style::Unsupported, 0),
@@ -2505,13 +2506,13 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
         });
         let layout = bx.layout_of(pointee);
         let ptrs = args[0].immediate();
-        // The second argument must be a ptr-sized integer.
+        // The second argument must be a addr-sized integer.
         // (We don't care about the signedness, this is wrapping anyway.)
         let (_offsets_len, offsets_elem) = arg_tys[1].simd_size_and_type(bx.tcx());
         if !matches!(offsets_elem.kind(), ty::Int(ty::IntTy::Isize) | ty::Uint(ty::UintTy::Usize)) {
             span_bug!(
                 span,
-                "must be called with a vector of pointer-sized integers as second argument"
+                "must be called with a vector of address-sized integers as second argument"
             );
         }
         let offsets = args[1].immediate();
@@ -2523,7 +2524,7 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
         let lhs = args[0].immediate();
         let rhs = args[1].immediate();
         let is_add = name == sym::simd_saturating_add;
-        let ptr_bits = bx.tcx().data_layout.pointer_size.bits() as _;
+        let ptr_bits = bx.tcx().data_layout.address_size.bits() as _;
         let (signed, elem_width, elem_ty) = match *in_elem.kind() {
             ty::Int(i) => (true, i.bit_width().unwrap_or(ptr_bits), bx.cx.type_int_from_ty(i)),
             ty::Uint(i) => (false, i.bit_width().unwrap_or(ptr_bits), bx.cx.type_uint_from_ty(i)),

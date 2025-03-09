@@ -685,14 +685,14 @@ impl<'tcx, M: Machine<'tcx>> InterpCx<'tcx, M> {
     ) -> InterpResult<'tcx, Pointer<Option<M::Provenance>>> {
         self.read_scalar(op)?.to_pointer(self)
     }
-    /// Read a pointer-sized unsigned integer from a place.
+    /// Read a address-sized unsigned integer from a place.
     pub fn read_target_usize(
         &self,
         op: &impl Projectable<'tcx, M::Provenance>,
     ) -> InterpResult<'tcx, u64> {
         self.read_scalar(op)?.to_target_usize(self)
     }
-    /// Read a pointer-sized signed integer from a place.
+    /// Read a address-sized signed integer from a place.
     pub fn read_target_isize(
         &self,
         op: &impl Projectable<'tcx, M::Provenance>,

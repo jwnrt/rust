@@ -15,11 +15,11 @@ use crate::debuginfo::FunctionDebugContext;
 use crate::prelude::*;
 
 pub(crate) fn pointer_ty(tcx: TyCtxt<'_>) -> types::Type {
-    match tcx.data_layout.pointer_size.bits() {
+    match tcx.data_layout.address_size.bits() {
         16 => types::I16,
         32 => types::I32,
         64 => types::I64,
-        bits => bug!("ptr_sized_integer: unknown pointer bit size {}", bits),
+        bits => bug!("addr_sized_integer: unknown pointer bit size {}", bits),
     }
 }
 

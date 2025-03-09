@@ -22,7 +22,7 @@ pub(crate) unsafe fn codegen(
     alloc_error_handler_kind: AllocatorKind,
 ) {
     let context = &mods.context;
-    let usize = match tcx.sess.target.pointer_width {
+    let usize = match tcx.sess.target.address_width() {
         16 => context.new_type::<u16>(),
         32 => context.new_type::<u32>(),
         64 => context.new_type::<u64>(),

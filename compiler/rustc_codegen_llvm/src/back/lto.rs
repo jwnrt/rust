@@ -670,7 +670,7 @@ pub(crate) fn run_pass_manager(
         let cx = SimpleCx::new(
             module.module_llvm.llmod(),
             &module.module_llvm.llcx,
-            cgcx.pointer_size,
+            cgcx.address_size,
             cgcx.address_space,
         );
 

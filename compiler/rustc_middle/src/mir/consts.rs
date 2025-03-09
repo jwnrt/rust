@@ -142,8 +142,9 @@ impl<'tcx> ConstValue<'tcx> {
                 // The reference itself is stored behind an indirection.
                 // Load the reference, and then load the actual slice contents.
                 let a = tcx.global_alloc(alloc_id).unwrap_memory().inner();
+                let addr_size = tcx.data_layout.address_size;
                 let ptr_size = tcx.data_layout.pointer_size;
-                if a.size() < offset + 2 * ptr_size {
+                if a.size() < offset + ptr_size + addr_size {
                     // (partially) dangling reference
                     return None;
                 }
@@ -159,7 +160,7 @@ impl<'tcx> ConstValue<'tcx> {
                 let len = a
                     .read_scalar(
                         &tcx,
-                        alloc_range(offset + ptr_size, ptr_size),
+                        alloc_range(offset + ptr_size, addr_size),
                         /* read_provenance */ false,
                     )
                     .ok()?;

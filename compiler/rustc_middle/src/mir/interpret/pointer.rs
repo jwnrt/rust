@@ -38,27 +38,27 @@ pub trait PointerArithmetic: HasDataLayout {
 
     #[inline]
     fn target_usize_max(&self) -> u64 {
-        self.pointer_size().unsigned_int_max().try_into().unwrap()
+        self.address_size().unsigned_int_max().try_into().unwrap()
     }
 
     #[inline]
     fn target_isize_min(&self) -> i64 {
-        self.pointer_size().signed_int_min().try_into().unwrap()
+        self.address_size().signed_int_min().try_into().unwrap()
     }
 
     #[inline]
     fn target_isize_max(&self) -> i64 {
-        self.pointer_size().signed_int_max().try_into().unwrap()
+        self.address_size().signed_int_max().try_into().unwrap()
     }
 
     #[inline]
     fn truncate_to_target_usize(&self, val: u64) -> u64 {
-        self.pointer_size().truncate(val.into()).try_into().unwrap()
+        self.address_size().truncate(val.into()).try_into().unwrap()
     }
 
     #[inline]
     fn sign_extend_to_target_isize(&self, val: u64) -> i64 {
-        self.pointer_size().sign_extend(val.into()).try_into().unwrap()
+        self.address_size().sign_extend(val.into()).try_into().unwrap()
     }
 }
 

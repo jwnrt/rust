@@ -265,8 +265,8 @@ impl<'a, 'gcc, 'tcx> Builder<'a, 'gcc, 'tcx> {
         use rustc_middle::ty::{Int, Uint};
 
         let new_kind = match *typ.kind() {
-            Int(t @ Isize) => Int(t.normalize(self.tcx.sess.target.pointer_width)),
-            Uint(t @ Usize) => Uint(t.normalize(self.tcx.sess.target.pointer_width)),
+            Int(t @ Isize) => Int(t.normalize(self.tcx.sess.target.address_width())),
+            Uint(t @ Usize) => Uint(t.normalize(self.tcx.sess.target.address_width())),
             t @ (Uint(_) | Int(_)) => t,
             _ => panic!("tried to get overflow intrinsic for op applied to non-int type"),
         };

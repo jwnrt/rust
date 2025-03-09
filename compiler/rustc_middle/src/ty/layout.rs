@@ -54,7 +54,7 @@ impl abi::Integer {
             ty::IntTy::I32 => I32,
             ty::IntTy::I64 => I64,
             ty::IntTy::I128 => I128,
-            ty::IntTy::Isize => cx.data_layout().ptr_sized_integer(),
+            ty::IntTy::Isize => cx.data_layout().addr_sized_integer(),
         }
     }
     fn from_uint_ty<C: HasDataLayout>(cx: &C, ity: ty::UintTy) -> abi::Integer {
@@ -65,7 +65,7 @@ impl abi::Integer {
             ty::UintTy::U32 => I32,
             ty::UintTy::U64 => I64,
             ty::UintTy::U128 => I128,
-            ty::UintTy::Usize => cx.data_layout().ptr_sized_integer(),
+            ty::UintTy::Usize => cx.data_layout().addr_sized_integer(),
         }
     }
 

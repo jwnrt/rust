@@ -612,7 +612,7 @@ fn int_type_width_signed<'gcc, 'tcx>(
     match *ty.kind() {
         ty::Int(t) => Some((
             match t {
-                rustc_middle::ty::IntTy::Isize => u64::from(cx.tcx.sess.target.pointer_width),
+                rustc_middle::ty::IntTy::Isize => u64::from(cx.tcx.sess.target.address_width()),
                 rustc_middle::ty::IntTy::I8 => 8,
                 rustc_middle::ty::IntTy::I16 => 16,
                 rustc_middle::ty::IntTy::I32 => 32,
@@ -623,7 +623,7 @@ fn int_type_width_signed<'gcc, 'tcx>(
         )),
         ty::Uint(t) => Some((
             match t {
-                rustc_middle::ty::UintTy::Usize => u64::from(cx.tcx.sess.target.pointer_width),
+                rustc_middle::ty::UintTy::Usize => u64::from(cx.tcx.sess.target.address_width()),
                 rustc_middle::ty::UintTy::U8 => 8,
                 rustc_middle::ty::UintTy::U16 => 16,
                 rustc_middle::ty::UintTy::U32 => 32,

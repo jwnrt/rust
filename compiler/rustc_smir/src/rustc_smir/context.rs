@@ -44,6 +44,9 @@ impl<'tcx> SmirCtxt<'tcx> {
         let mut tables = self.0.borrow_mut();
         MachineInfo {
             endian: tables.tcx.data_layout.endian.stable(&mut *tables),
+            address_width: MachineSize::from_bits(
+                tables.tcx.data_layout.address_size.bits().try_into().unwrap(),
+            ),
             pointer_width: MachineSize::from_bits(
                 tables.tcx.data_layout.pointer_size.bits().try_into().unwrap(),
             ),

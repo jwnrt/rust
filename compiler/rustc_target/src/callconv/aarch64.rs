@@ -65,7 +65,7 @@ fn softfloat_float_abi<Ty>(target: &Target, arg: &mut ArgAbi<'_, Ty>) {
         // indirection. This means we lose the nice "pass it as two arguments" optimization, but we
         // currently just have to way to combine a `PassMode::Cast` with that optimization (and we
         // need a cast since we want to pass the float as an int).
-        if arg.layout.size.bits() <= target.pointer_width.into() {
+        if arg.layout.size.bits() <= target.address_width().into() {
             arg.cast_to(Reg { kind: RegKind::Integer, size: arg.layout.size });
         } else {
             arg.make_indirect();
