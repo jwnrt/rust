@@ -214,6 +214,13 @@ pub(crate) unsafe fn create_module<'ll>(
             target_data_layout = target_data_layout.replace("e-p6:32:32-i64", "e-i64");
         }
     }
+    // FIXME(jwnrt): work out why CHERIoT LLVM doesn't give us this when we ask.
+    if sess.target.options.cpu == "cheriot" {
+        target_data_layout = target_data_layout
+            .strip_suffix("-pf200:64:64:64:32-A200-P200-G200")
+            .unwrap()
+            .to_string();
+    }
 
     // Ensure the data-layout values hardcoded remain the defaults.
     {
