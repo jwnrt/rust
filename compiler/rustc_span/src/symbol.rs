@@ -2060,6 +2060,7 @@ symbols! {
         t32,
         target,
         target_abi,
+        target_address_width,
         target_arch,
         target_endian,
         target_env,
