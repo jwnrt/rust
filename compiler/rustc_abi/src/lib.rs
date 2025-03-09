@@ -237,6 +237,8 @@ pub struct TargetDataLayout {
     pub f128_align: AbiAndPrefAlign,
     pub pointer_size: Size,
     pub pointer_align: AbiAndPrefAlign,
+    pub address_size: Size,
+    pub address_align: AbiAndPrefAlign,
     pub aggregate_align: AbiAndPrefAlign,
 
     /// Alignments for vector types.
@@ -269,6 +271,8 @@ impl Default for TargetDataLayout {
             f128_align: AbiAndPrefAlign::new(align(128)),
             pointer_size: Size::from_bits(64),
             pointer_align: AbiAndPrefAlign::new(align(64)),
+            address_size: Size::from_bits(64),
+            address_align: AbiAndPrefAlign::new(align(64)),
             aggregate_align: AbiAndPrefAlign { abi: align(0), pref: align(64) },
             vector_align: vec![
                 (Size::from_bits(64), AbiAndPrefAlign::new(align(64))),
@@ -288,6 +292,7 @@ pub enum TargetDataLayoutErrors<'a> {
     InvalidAlignment { cause: &'a str, err: AlignFromBytesError },
     InconsistentTargetArchitecture { dl: &'a str, target: &'a str },
     InconsistentTargetPointerWidth { pointer_size: u64, target: u32 },
+    InconsistentTargetAddressWidth { address_size: u64, target: u32 },
     InvalidBitsSize { err: String },
 }
 
@@ -360,6 +365,8 @@ impl TargetDataLayout {
                 [p @ "p", s, a @ ..] | [p @ "p0", s, a @ ..] => {
                     dl.pointer_size = parse_size(s, p)?;
                     dl.pointer_align = parse_align(a, p)?;
+                    dl.address_size = dl.pointer_size;
+                    dl.address_align = dl.pointer_align;
                 }
                 [s, a @ ..] if s.starts_with('i') => {
                     let Ok(bits) = s[1..].parse::<u64>() else {

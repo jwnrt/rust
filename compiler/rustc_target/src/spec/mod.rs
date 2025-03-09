@@ -2204,6 +2204,14 @@ impl Target {
             });
         }
 
+        let target_address_width: u64 = self.address_width().into();
+        if dl.address_size.bits() != target_address_width {
+            return Err(TargetDataLayoutErrors::InconsistentTargetAddressWidth {
+                address_size: dl.address_size.bits(),
+                target: self.address_width(),
+            });
+        }
+
         dl.c_enum_min_size = self
             .c_enum_min_bits
             .map_or_else(
@@ -2664,6 +2672,11 @@ pub struct TargetOptions {
 
     /// Whether the targets supports -Z small-data-threshold
     small_data_threshold_support: SmallDataThresholdSupport,
+
+    /// Width of an an address for the target if different from the width of a pointer.
+    /// This is used for the width of `usize`/`isize` on platforms like CHERI where
+    /// pointers contain more than just an address. Defaults to `None`.
+    address_width: Option<u64>,
 }
 
 /// Add arguments for the given flavor and also for its "twin" flavors
@@ -2891,6 +2904,7 @@ impl Default for TargetOptions {
             entry_abi: Conv::C,
             supports_xray: false,
             small_data_threshold_support: SmallDataThresholdSupport::DefaultForArch,
+            address_width: None,
         }
     }
 }
@@ -3619,6 +3633,14 @@ impl Target {
         } else {
             Align::MAX
         }
+    }
+
+    /// Number of bits required to represent an address.
+    ///
+    /// Normally the same as the target's `pointer_width` except on systems like CHERI
+    /// where pointers contain additional data. Used for `usize`/`isize`.
+    pub fn address_width(&self) -> u32 {
+        self.options.address_width.unwrap_or(self.pointer_width as u64) as u32
     }
 }
 
