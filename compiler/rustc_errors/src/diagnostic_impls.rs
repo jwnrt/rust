@@ -371,6 +371,11 @@ impl<G: EmissionGuarantee> Diagnostic<'_, G> for TargetDataLayoutErrors<'_> {
                     .with_arg("pointer_size", pointer_size)
                     .with_arg("target", target)
             }
+            TargetDataLayoutErrors::InconsistentTargetPointerStride { pointer_stride, target } => {
+                Diag::new(dcx, level, fluent::errors_target_inconsistent_pointer_stride)
+                    .with_arg("pointer_stride", pointer_stride)
+                    .with_arg("target", target)
+            }
             TargetDataLayoutErrors::InvalidBitsSize { err } => {
                 Diag::new(dcx, level, fluent::errors_target_invalid_bits_size).with_arg("err", err)
             }

@@ -2199,6 +2199,14 @@ impl Target {
             });
         }
 
+        let target_pointer_stride: u64 = self.pointer_stride().into();
+        if dl.pointer_stride.bits() != target_pointer_stride {
+            return Err(TargetDataLayoutErrors::InconsistentTargetPointerStride {
+                pointer_stride: dl.pointer_stride.bits(),
+                target: self.pointer_stride(),
+            });
+        }
+
         dl.c_enum_min_size = self
             .c_enum_min_bits
             .map_or_else(
@@ -2656,6 +2664,11 @@ pub struct TargetOptions {
 
     /// Whether the targets supports -Z small-data-threshold
     small_data_threshold_support: SmallDataThresholdSupport,
+
+    /// Additional space required *after* a pointer for it to be properly represented.
+    /// This is used by CHERI systems to store capability metadata for the pointer.
+    /// Defaults to `None`.
+    pointer_extension_width: Option<u64>,
 }
 
 /// Add arguments for the given flavor and also for its "twin" flavors
@@ -2883,6 +2896,7 @@ impl Default for TargetOptions {
             entry_abi: Conv::C,
             supports_xray: false,
             small_data_threshold_support: SmallDataThresholdSupport::DefaultForArch,
+            pointer_extension_width: None,
         }
     }
 }
@@ -3594,6 +3608,17 @@ impl Target {
             // Unsupported architecture.
             _ => return None,
         })
+    }
+
+    /// Number of bits that a pointer fully occupies.
+    ///
+    /// Normally equal to the target's `pointer_width` except on systems like CHERI
+    /// where pointers are extended with capability metadata.
+    ///
+    /// The terminology comes from Swift where it refers to the size of some data
+    /// plus padding.
+    pub fn pointer_stride(&self) -> u32 {
+        self.pointer_width + self.options.pointer_extension_width.unwrap_or(0) as u32
     }
 }
 

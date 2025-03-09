@@ -222,6 +222,7 @@ pub struct TargetDataLayout {
     pub f128_align: AbiAndPrefAlign,
     pub pointer_size: Size,
     pub pointer_align: AbiAndPrefAlign,
+    pub pointer_stride: Size,
     pub aggregate_align: AbiAndPrefAlign,
 
     /// Alignments for vector types.
@@ -253,6 +254,7 @@ impl Default for TargetDataLayout {
             f128_align: AbiAndPrefAlign::new(align(128)),
             pointer_size: Size::from_bits(64),
             pointer_align: AbiAndPrefAlign::new(align(64)),
+            pointer_stride: Size::from_bits(64),
             aggregate_align: AbiAndPrefAlign { abi: align(0), pref: align(64) },
             vector_align: vec![
                 (Size::from_bits(64), AbiAndPrefAlign::new(align(64))),
@@ -271,6 +273,7 @@ pub enum TargetDataLayoutErrors<'a> {
     InvalidAlignment { cause: &'a str, err: AlignFromBytesError },
     InconsistentTargetArchitecture { dl: &'a str, target: &'a str },
     InconsistentTargetPointerWidth { pointer_size: u64, target: u32 },
+    InconsistentTargetPointerStride { pointer_stride: u64, target: u32 },
     InvalidBitsSize { err: String },
 }
 
@@ -320,6 +323,7 @@ impl TargetDataLayout {
 
         let mut dl = TargetDataLayout::default();
         let mut i128_align_src = 64;
+        let mut pointer_stride = None;
         for spec in input.split('-') {
             let spec_parts = spec.split(':').collect::<Vec<_>>();
 
@@ -340,6 +344,12 @@ impl TargetDataLayout {
                 [p @ "p", s, a @ ..] | [p @ "p0", s, a @ ..] => {
                     dl.pointer_size = parse_size(s, p)?;
                     dl.pointer_align = parse_align(a, p)?;
+                }
+                // Special CHERI-LLVM spec part describing the full capability pointer,
+                // meaning address plus capability metadata.
+                // Alignment is ignored here. It should be the same as the `p0` spec's.
+                [p @ "pf200", s, ..] => {
+                    pointer_stride = Some(parse_size(s, p)?);
                 }
                 [s, a @ ..] if s.starts_with('i') => {
                     let Ok(bits) = s[1..].parse::<u64>() else {
@@ -375,6 +385,7 @@ impl TargetDataLayout {
                 _ => {} // Ignore everything else.
             }
         }
+        dl.pointer_stride = pointer_stride.unwrap_or(dl.pointer_size);
         Ok(dl)
     }
 

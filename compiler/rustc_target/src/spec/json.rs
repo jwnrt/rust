@@ -655,6 +655,7 @@ impl Target {
         key!(entry_name);
         key!(entry_abi, Conv)?;
         key!(supports_xray, bool);
+        key!(pointer_extension_width, Option<u64>);
 
         base.update_from_cli();
         base.check_consistency(TargetKind::Json)?;
