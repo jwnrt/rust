@@ -637,9 +637,15 @@ pub const fn without_provenance_mut<T>(addr: usize) -> *mut T {
     // An int-to-pointer transmute currently has exactly the intended semantics: it creates a
     // pointer without provenance. Note that this is *not* a stable guarantee about transmute
     // semantics, it relies on sysroot crates having special status.
+    // SAFETY: we will fill in the address of this pointer later.
+    // SAFETY: pointer extension data must be valid for zero.
+    let mut dst: *mut T = unsafe { mem::zeroed() };
+    // SAFETY: pointers must have size >= `usize` and the same alignment.
+    let dst_addr: *mut usize = unsafe { mem::transmute(&raw mut dst) };
     // SAFETY: every valid integer is also a valid pointer (as long as you don't dereference that
     // pointer).
-    unsafe { mem::transmute(addr) }
+    unsafe { copy(&raw const addr, dst_addr, 1) }
+    dst
 }
 
 /// Creates a new pointer that is dangling, but non-null and well-aligned.
