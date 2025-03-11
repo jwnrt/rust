@@ -133,19 +133,28 @@ define_valid_range_type! {
     pub struct NonZeroI128Inner(i128 as u128 in 1..=0xffffffffffffffff_ffffffffffffffff);
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 define_valid_range_type! {
     pub struct UsizeNoHighBit(usize as usize in 0..=0x7fff);
     pub struct NonZeroUsizeInner(usize as usize in 1..=0xffff);
     pub struct NonZeroIsizeInner(isize as usize in 1..=0xffff);
 }
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 define_valid_range_type! {
     pub struct UsizeNoHighBit(usize as usize in 0..=0x7fff_ffff);
     pub struct NonZeroUsizeInner(usize as usize in 1..=0xffff_ffff);
     pub struct NonZeroIsizeInner(isize as usize in 1..=0xffff_ffff);
 }
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 define_valid_range_type! {
     pub struct UsizeNoHighBit(usize as usize in 0..=0x7fff_ffff_ffff_ffff);
     pub struct NonZeroUsizeInner(usize as usize in 1..=0xffff_ffff_ffff_ffff);

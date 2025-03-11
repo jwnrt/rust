@@ -235,7 +235,10 @@ impl Default for Alignment {
     }
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u16)]
 enum AlignmentEnum {
@@ -257,7 +260,10 @@ enum AlignmentEnum {
     _Align1Shl15 = 1 << 15,
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 enum AlignmentEnum {
@@ -295,7 +301,10 @@ enum AlignmentEnum {
     _Align1Shl31 = 1 << 31,
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u64)]
 enum AlignmentEnum {

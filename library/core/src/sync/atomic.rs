@@ -3724,8 +3724,11 @@ atomic_int! {
 
 #[cfg(target_has_atomic_load_store = "ptr")]
 macro_rules! atomic_int_ptr_sized {
-    ( $($target_pointer_width:literal $align:literal)* ) => { $(
-        #[cfg(target_pointer_width = $target_pointer_width)]
+    ( $($target_address_width:literal $align:literal)* ) => { $(
+        #[cfg(any(
+            all(bootstrap, target_pointer_width = $target_address_width),
+            all(not(bootstrap), target_address_width = $target_address_width),
+        ))]
         atomic_int! {
             cfg(target_has_atomic = "ptr"),
             cfg(target_has_atomic_equal_alignment = "ptr"),
@@ -3744,7 +3747,10 @@ macro_rules! atomic_int_ptr_sized {
             $align,
             isize AtomicIsize
         }
-        #[cfg(target_pointer_width = $target_pointer_width)]
+        #[cfg(any(
+            all(bootstrap, target_pointer_width = $target_address_width),
+            all(not(bootstrap), target_address_width = $target_address_width),
+        ))]
         atomic_int! {
             cfg(target_has_atomic = "ptr"),
             cfg(target_has_atomic_equal_alignment = "ptr"),
@@ -3765,7 +3771,10 @@ macro_rules! atomic_int_ptr_sized {
         }
 
         /// An [`AtomicIsize`] initialized to `0`.
-        #[cfg(target_pointer_width = $target_pointer_width)]
+        #[cfg(any(
+            all(bootstrap, target_pointer_width = $target_address_width),
+            all(not(bootstrap), target_address_width = $target_address_width),
+        ))]
         #[stable(feature = "rust1", since = "1.0.0")]
         #[deprecated(
             since = "1.34.0",
@@ -3775,7 +3784,10 @@ macro_rules! atomic_int_ptr_sized {
         pub const ATOMIC_ISIZE_INIT: AtomicIsize = AtomicIsize::new(0);
 
         /// An [`AtomicUsize`] initialized to `0`.
-        #[cfg(target_pointer_width = $target_pointer_width)]
+        #[cfg(any(
+            all(bootstrap, target_pointer_width = $target_address_width),
+            all(not(bootstrap), target_address_width = $target_address_width),
+        ))]
         #[stable(feature = "rust1", since = "1.0.0")]
         #[deprecated(
             since = "1.34.0",

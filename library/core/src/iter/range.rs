@@ -422,19 +422,28 @@ macro_rules! step_integer_impls {
     };
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 step_integer_impls! {
     narrower than or same width as usize: [u8 i8], [u16 i16], [u32 i32], [u64 i64], [usize isize];
     wider than usize: [u128 i128];
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 step_integer_impls! {
     narrower than or same width as usize: [u8 i8], [u16 i16], [u32 i32], [usize isize];
     wider than usize: [u64 i64], [u128 i128];
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 step_integer_impls! {
     narrower than or same width as usize: [u8 i8], [u16 i16], [usize isize];
     wider than usize: [u32 i32], [u64 i64], [u128 i128];
@@ -941,12 +950,18 @@ unsafe_range_trusted_random_access_impl! {
     isize i8 i16
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 unsafe_range_trusted_random_access_impl! {
     u32 i32
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 unsafe_range_trusted_random_access_impl! {
     u32 i32
     u64 i64

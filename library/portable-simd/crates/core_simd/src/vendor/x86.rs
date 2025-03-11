@@ -40,7 +40,10 @@ from_transmute! { unsafe f64x2 => __m128d }
 from_transmute! { unsafe f64x4 => __m256d }
 from_transmute! { unsafe f64x8 => __m512d }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 mod p32 {
     use super::*;
     from_transmute! { unsafe usizex4 => __m128i }
@@ -51,7 +54,10 @@ mod p32 {
     from_transmute! { unsafe Simd<isize, 16> => __m512i }
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 mod p64 {
     use super::*;
     from_transmute! { unsafe usizex2 => __m128i }

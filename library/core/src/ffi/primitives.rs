@@ -135,7 +135,8 @@ mod c_char_definition {
 mod c_long_definition {
     crate::cfg_match! {
         any(
-            all(target_pointer_width = "64", not(windows)),
+            all(bootstrap, target_pointer_width = "64", not(windows)),
+            all(not(bootstrap), target_address_width = "64", not(windows)),
             // wasm32 Linux ABI uses 64-bit long
             all(target_arch = "wasm32", target_os = "linux")
         ) => {

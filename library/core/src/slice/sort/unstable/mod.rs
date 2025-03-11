@@ -1,9 +1,17 @@
 //! This module contains the entry points for `slice::sort_unstable`.
 
 use crate::mem::SizedTypeProperties;
-#[cfg(not(any(feature = "optimize_for_size", target_pointer_width = "16")))]
+#[cfg(not(any(
+    feature = "optimize_for_size",
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+)))]
 use crate::slice::sort::shared::find_existing_run;
-#[cfg(not(any(feature = "optimize_for_size", target_pointer_width = "16")))]
+#[cfg(not(any(
+    feature = "optimize_for_size",
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+)))]
 use crate::slice::sort::shared::smallsort::insertion_sort_shift_left;
 use crate::{cfg_match, intrinsics};
 
@@ -31,7 +39,11 @@ pub fn sort<T, F: FnMut(&T, &T) -> bool>(v: &mut [T], is_less: &mut F) {
     }
 
     cfg_match! {
-        any(feature = "optimize_for_size", target_pointer_width = "16") => {
+        any(
+            feature = "optimize_for_size",
+            all(bootstrap, target_pointer_width = "16"),
+            all(not(bootstrap), target_address_width = "16"),
+        ) => {
             heapsort::heapsort(v, is_less);
         }
         _ => {
@@ -56,7 +68,11 @@ pub fn sort<T, F: FnMut(&T, &T) -> bool>(v: &mut [T], is_less: &mut F) {
 ///
 /// Deliberately don't inline the main sorting routine entrypoint to ensure the
 /// inlined insertion sort i-cache footprint remains minimal.
-#[cfg(not(any(feature = "optimize_for_size", target_pointer_width = "16")))]
+#[cfg(not(any(
+    feature = "optimize_for_size",
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+)))]
 #[inline(never)]
 fn ipnsort<T, F>(v: &mut [T], is_less: &mut F)
 where

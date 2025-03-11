@@ -15,14 +15,20 @@ from_transmute! { unsafe u64x2 => v128 }
 from_transmute! { unsafe i64x2 => v128 }
 from_transmute! { unsafe f64x2 => v128 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 mod p32 {
     use super::*;
     from_transmute! { unsafe usizex4 => v128 }
     from_transmute! { unsafe isizex4 => v128 }
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 mod p64 {
     use super::*;
     from_transmute! { unsafe usizex2 => v128 }

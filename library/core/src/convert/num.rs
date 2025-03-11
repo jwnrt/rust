@@ -373,7 +373,10 @@ impl_try_from_lower_bounded!(i128 => u128);
 impl_try_from_upper_bounded!(usize => isize);
 impl_try_from_lower_bounded!(isize => usize);
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 mod ptr_try_from_impls {
     use super::TryFromIntError;
 
@@ -395,7 +398,10 @@ mod ptr_try_from_impls {
     rev!(impl_try_from_both_bounded, isize => i32, i64, i128);
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 mod ptr_try_from_impls {
     use super::TryFromIntError;
 
@@ -420,7 +426,10 @@ mod ptr_try_from_impls {
     rev!(impl_try_from_both_bounded, isize => i64, i128);
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 mod ptr_try_from_impls {
     use super::TryFromIntError;
 

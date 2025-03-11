@@ -91,19 +91,28 @@ pub(super) const fn u128(mut val: u128) -> u32 {
     log + u64(val as u64)
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 #[inline]
 pub(super) const fn usize(val: usize) -> u32 {
     u16(val as _)
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 #[inline]
 pub(super) const fn usize(val: usize) -> u32 {
     u32(val as _)
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 #[inline]
 pub(super) const fn usize(val: usize) -> u32 {
     u64(val as _)

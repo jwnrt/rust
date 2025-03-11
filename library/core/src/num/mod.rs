@@ -364,7 +364,10 @@ impl i128 {
     midpoint_impl! { i128, signed }
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 impl isize {
     int_impl! {
         Self = isize,
@@ -389,7 +392,10 @@ impl isize {
     midpoint_impl! { isize, i32, signed }
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 impl isize {
     int_impl! {
         Self = isize,
@@ -414,7 +420,10 @@ impl isize {
     midpoint_impl! { isize, i64, signed }
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 impl isize {
     int_impl! {
         Self = isize,
@@ -1175,7 +1184,10 @@ impl u128 {
     midpoint_impl! { u128, unsigned }
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 impl usize {
     uint_impl! {
         Self = usize,
@@ -1199,7 +1211,10 @@ impl usize {
     midpoint_impl! { usize, u32, unsigned }
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 impl usize {
     uint_impl! {
         Self = usize,
@@ -1223,7 +1238,10 @@ impl usize {
     midpoint_impl! { usize, u64, unsigned }
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 impl usize {
     uint_impl! {
         Self = usize,

@@ -2218,7 +2218,10 @@ nonzero_integer! {
     reversed = "0x48091e6a2c48091e6a2c48091e6a2c48",
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 nonzero_integer! {
     Self = NonZeroUsize,
     Primitive = unsigned usize,
@@ -2231,7 +2234,10 @@ nonzero_integer! {
     reversed = "0x2c48",
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 nonzero_integer! {
     Self = NonZeroUsize,
     Primitive = unsigned usize,
@@ -2244,7 +2250,10 @@ nonzero_integer! {
     reversed = "0x1e6a2c48",
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 nonzero_integer! {
     Self = NonZeroUsize,
     Primitive = unsigned usize,
@@ -2317,7 +2326,10 @@ nonzero_integer! {
     reversed = "0x48091e6a2c48091e6a2c48091e6a2c48",
 }
 
-#[cfg(target_pointer_width = "16")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "16"),
+    all(not(bootstrap), target_address_width = "16"),
+))]
 nonzero_integer! {
     Self = NonZeroIsize,
     Primitive = signed isize,
@@ -2330,7 +2342,10 @@ nonzero_integer! {
     reversed = "0x2c48",
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "32"),
+    all(not(bootstrap), target_address_width = "32"),
+))]
 nonzero_integer! {
     Self = NonZeroIsize,
     Primitive = signed isize,
@@ -2343,7 +2358,10 @@ nonzero_integer! {
     reversed = "0x1e6a2c48",
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(any(
+    all(bootstrap, target_pointer_width = "64"),
+    all(not(bootstrap), target_address_width = "64"),
+))]
 nonzero_integer! {
     Self = NonZeroIsize,
     Primitive = signed isize,
