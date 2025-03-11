@@ -342,6 +342,7 @@ impl TargetDataLayout {
 
         let mut dl = TargetDataLayout::default();
         let mut i128_align_src = 64;
+        let mut capability_size_align = None;
         for spec in input.split('-') {
             let spec_parts = spec.split(':').collect::<Vec<_>>();
 
@@ -367,6 +368,12 @@ impl TargetDataLayout {
                     dl.pointer_align = parse_align(a, p)?;
                     dl.address_size = dl.pointer_size;
                     dl.address_align = dl.pointer_align;
+                }
+                // Special CHERI-LLVM spec part describing the full capability pointer,
+                // meaning address plus capability metadata.
+                // Alignment is ignored here. It should be the same as the `p0` spec's.
+                [p @ "pf200", s, a @ ..] => {
+                    capability_size_align = Some((parse_size(s, p)?, parse_align(a, p)?));
                 }
                 [s, a @ ..] if s.starts_with('i') => {
                     let Ok(bits) = s[1..].parse::<u64>() else {
@@ -401,6 +408,10 @@ impl TargetDataLayout {
                 }
                 _ => {} // Ignore everything else.
             }
+        }
+        if let Some((size, align)) = capability_size_align {
+            dl.pointer_size = size;
+            dl.pointer_align = align;
         }
         Ok(dl)
     }

@@ -299,6 +299,7 @@ LL |     cfg!(target_feature = "_UNEXPECTED_VALUE");
 `wide-arithmetic`
 `widekl`
 `x87`
+`xcheri`
 `xop`
 `xsave`
 `xsavec`

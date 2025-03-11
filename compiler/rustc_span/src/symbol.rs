@@ -2316,6 +2316,7 @@ symbols! {
         x86_amx_intrinsics,
         x87_reg,
         x87_target_feature,
+        xcheri,
         xer,
         xmm_reg,
         xop_target_feature,

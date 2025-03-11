@@ -3343,7 +3343,7 @@ impl Target {
             "riscv32" => {
                 check_matches!(
                     &*self.llvm_abiname,
-                    "ilp32" | "ilp32f" | "ilp32d" | "ilp32e",
+                    "ilp32" | "ilp32f" | "ilp32d" | "ilp32e" | "cheriot" | "cheriot-baremetal",
                     "invalid RISC-V ABI name: {}",
                     self.llvm_abiname,
                 );

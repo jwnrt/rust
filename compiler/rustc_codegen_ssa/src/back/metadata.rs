@@ -40,6 +40,10 @@ pub(crate) struct DefaultMetadataLoader;
 
 static AIX_METADATA_SYMBOL_NAME: &'static str = "__aix_rust_metadata";
 
+// CHERI-specific ELF flags not provided by upstream `object::elf`.
+static EF_RISCV_CHERIABI: u32 = 0x0001_0000;
+static EF_RISCV_CAP_MODE: u32 = 0x0002_0000;
+
 fn load_metadata_with(
     path: &Path,
     f: impl for<'a> FnOnce(&'a [u8]) -> Result<&'a [u8], String>,
@@ -319,6 +323,11 @@ pub(super) fn elf_e_flags(architecture: Architecture, sess: &Session) -> u32 {
                 e_flags |= elf::EF_RISCV_RVC;
             }
 
+            // Check if CHERI is enabled
+            if sess.unstable_target_features.contains(&sym::xcheri) {
+                e_flags |= EF_RISCV_CHERIABI | EF_RISCV_CAP_MODE
+            }
+
             // Set the appropriate flag based on ABI
             // This needs to match LLVM `RISCVELFStreamer.cpp`
             match &*sess.target.llvm_abiname {
@@ -326,7 +335,9 @@ pub(super) fn elf_e_flags(architecture: Architecture, sess: &Session) -> u32 {
                 "ilp32f" | "lp64f" => e_flags |= elf::EF_RISCV_FLOAT_ABI_SINGLE,
                 "ilp32d" | "lp64d" => e_flags |= elf::EF_RISCV_FLOAT_ABI_DOUBLE,
                 // Note that the `lp64e` is still unstable as it's not (yet) part of the ELF psABI.
-                "ilp32e" | "lp64e" => e_flags |= elf::EF_RISCV_RVE,
+                "ilp32e" | "lp64e" | "cheriot" | "cheriot-baremetal" => {
+                    e_flags |= elf::EF_RISCV_RVE
+                }
                 _ => bug!("unknown RISC-V ABI name"),
             }
 
