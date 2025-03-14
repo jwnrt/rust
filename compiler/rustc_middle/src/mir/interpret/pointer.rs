@@ -14,9 +14,21 @@ use super::AllocId;
 pub trait PointerArithmetic: HasDataLayout {
     // These are not supposed to be overridden.
 
+    /// Size that a pointer fully occupies including extension data.
+    ///
+    /// Normally equal to the target's `address_width` except on systems like CHERI
+    /// where pointers are extended with capability metadata.
+    ///
+    /// The terminology comes from Swift where it refers to the size of some data
+    /// plus padding.
     #[inline(always)]
     fn pointer_size(&self) -> Size {
         self.data_layout().pointer_size
+    }
+
+    #[inline(always)]
+    fn address_size(&self) -> Size {
+        self.data_layout().address_size
     }
 
     #[inline(always)]

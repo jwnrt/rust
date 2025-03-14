@@ -446,6 +446,17 @@ impl TargetDataLayout {
         }
     }
 
+    #[inline]
+    pub fn addr_sized_integer(&self) -> Integer {
+        use Integer::*;
+        match self.address_size.bits() {
+            16 => I16,
+            32 => I32,
+            64 => I64,
+            bits => panic!("addr_sized_integer: unknown address bit size {bits}"),
+        }
+    }
+
     /// psABI-mandated alignment for a vector type, if any
     #[inline]
     fn cabi_vector_align(&self, vec_size: Size) -> Option<AbiAndPrefAlign> {

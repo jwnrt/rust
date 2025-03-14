@@ -10,6 +10,7 @@ use crate::stable_mir;
 pub struct MachineInfo {
     pub endian: Endian,
     pub pointer_width: MachineSize,
+    pub address_width: MachineSize,
 }
 
 impl MachineInfo {
@@ -23,6 +24,10 @@ impl MachineInfo {
 
     pub fn target_pointer_width() -> MachineSize {
         with(|cx| cx.target_info().pointer_width)
+    }
+
+    pub fn target_address_width() -> MachineSize {
+        with(|cx| cx.target_info().address_width)
     }
 }
 
