@@ -38,4 +38,6 @@ check-cfg = [
     'cfg(feature, values(any()))',
     # #[cfg(bootstrap)]
     'cfg(target_address_width, values("16", "32", "64"))',
+    # #[cfg(bootstrap)]
+    'cfg(target_feature, values("xcheri"))',
 ]
