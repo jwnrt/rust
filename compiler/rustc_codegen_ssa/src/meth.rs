@@ -27,8 +27,14 @@ impl<'a, 'tcx> VirtualIndex {
         debug!("get_fn({llvtable:?}, {ty:?}, {self:?})");
 
         let llty = bx.fn_ptr_backend_type(fn_abi);
+        let addr_size = bx.data_layout().address_size;
         let ptr_size = bx.data_layout().pointer_size;
-        let vtable_byte_offset = self.0 * ptr_size.bytes();
+        let vtable_byte_offset = match self.0 {
+            0 => 0,
+            1 => ptr_size.bytes(),
+            2 => (ptr_size + addr_size).bytes(),
+            _ => (ptr_size + addr_size * 2 + ptr_size * (self.0 - 3) as u64).bytes(),
+        };
 
         load_vtable(bx, llvtable, llty, vtable_byte_offset, ty, nonnull)
     }
@@ -63,8 +69,9 @@ impl<'a, 'tcx> VirtualIndex {
         debug!("get_int({:?}, {:?})", llvtable, self);
 
         let llty = bx.type_isize();
+        let addr_size = bx.data_layout().address_size;
         let ptr_size = bx.data_layout().pointer_size;
-        let vtable_byte_offset = self.0 * ptr_size.bytes();
+        let vtable_byte_offset = ptr_size.bytes() + (self.0 - 1) * addr_size.bytes();
 
         load_vtable(bx, llvtable, llty, vtable_byte_offset, ty, false)
     }

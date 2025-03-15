@@ -201,8 +201,11 @@ fn unsized_info<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>>(
             let vptr_entry_idx = cx.tcx().supertrait_vtable_slot((source, target));
 
             if let Some(entry_idx) = vptr_entry_idx {
+                let addr_size = bx.data_layout().address_size;
                 let ptr_size = bx.data_layout().pointer_size;
-                let vtable_byte_offset = u64::try_from(entry_idx).unwrap() * ptr_size.bytes();
+                let vtable_prefix = ptr_size.bytes() + addr_size.bytes() * 2;
+                let vtable_byte_offset =
+                    vtable_prefix + (u64::try_from(entry_idx).unwrap() - 3) * ptr_size.bytes();
                 load_vtable(bx, old_info, bx.type_ptr(), vtable_byte_offset, source, true)
             } else {
                 old_info
