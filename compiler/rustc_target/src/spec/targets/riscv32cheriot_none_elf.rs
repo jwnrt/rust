@@ -20,7 +20,7 @@ pub(crate) fn target() -> Target {
             linker_flavor: LinkerFlavor::Gnu(Cc::No, Lld::Yes),
             linker: Some("rust-lld".into()),
             cpu: "cheriot".into(),
-            max_atomic_width: Some(64),
+            max_atomic_width: Some(0),
             atomic_cas: false,
             features: "+e,+m,+c,+forced-atomics,+xcheri,+cap-mode".into(),
             llvm_abiname: "cheriot-baremetal".into(),
