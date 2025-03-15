@@ -132,10 +132,6 @@ impl<'ll, CX: Borrow<SCx<'ll>>> GenericCx<'ll, CX> {
         (**self).borrow().llmod
     }
 
-    pub(crate) fn isize_ty(&self) -> &'ll Type {
-        (**self).borrow().isize_ty
-    }
-
     pub(crate) fn type_variadic_func(&self, args: &[&'ll Type], ret: &'ll Type) -> &'ll Type {
         unsafe { llvm::LLVMFunctionType(ret, args.as_ptr(), args.len() as c_uint, True) }
     }
@@ -178,7 +174,8 @@ impl<'ll, CX: Borrow<SCx<'ll>>> BaseTypeCodegenMethods for GenericCx<'ll, CX> {
     }
 
     fn type_isize(&self) -> &'ll Type {
-        self.isize_ty()
+        let address_size = (**self).borrow().address_size.bits() as u32;
+        unsafe { llvm::LLVMIntTypeInContext(self.llcx(), address_size) }
     }
 
     fn type_f16(&self) -> &'ll Type {
@@ -206,7 +203,7 @@ impl<'ll, CX: Borrow<SCx<'ll>>> BaseTypeCodegenMethods for GenericCx<'ll, CX> {
     }
 
     fn type_ptr(&self) -> &'ll Type {
-        self.type_ptr_ext(AddressSpace::DATA)
+        self.type_ptr_ext((**self).borrow().address_space)
     }
 
     fn type_ptr_ext(&self, address_space: AddressSpace) -> &'ll Type {
@@ -250,13 +247,8 @@ impl<'ll, CX: Borrow<SCx<'ll>>> BaseTypeCodegenMethods for GenericCx<'ll, CX> {
 }
 
 impl Type {
-    /// Creates an integer type with the given number of bits, e.g., i24
-    pub(crate) fn ix_llcx(llcx: &llvm::Context, num_bits: u64) -> &Type {
-        unsafe { llvm::LLVMIntTypeInContext(llcx, num_bits as c_uint) }
-    }
-
-    pub(crate) fn ptr_llcx(llcx: &llvm::Context) -> &Type {
-        unsafe { llvm::LLVMPointerTypeInContext(llcx, AddressSpace::DATA.0) }
+    pub(crate) fn ptr_llcx(llcx: &llvm::Context, address_space: AddressSpace) -> &Type {
+        unsafe { llvm::LLVMPointerTypeInContext(llcx, address_space.0) }
     }
 }
 

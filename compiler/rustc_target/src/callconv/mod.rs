@@ -2,8 +2,8 @@ use std::str::FromStr;
 use std::{fmt, iter};
 
 use rustc_abi::{
-    AddressSpace, Align, BackendRepr, ExternAbi, HasDataLayout, Primitive, Reg, RegKind, Scalar,
-    Size, TyAbiInterface, TyAndLayout,
+    Align, BackendRepr, ExternAbi, HasDataLayout, Primitive, Reg, RegKind, Scalar, Size,
+    TyAbiInterface, TyAndLayout,
 };
 use rustc_macros::HashStable_Generic;
 

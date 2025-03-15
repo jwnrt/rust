@@ -264,7 +264,7 @@ pub fn layout_of_ty_query(
         }
         // Potentially-wide pointers.
         TyKind::Ref(_, _, pointee) | TyKind::Raw(_, pointee) => {
-            let mut data_ptr = scalar_unit(dl, Primitive::Pointer(AddressSpace::DATA));
+            let mut data_ptr = scalar_unit(dl, Primitive::Pointer(dl.data_address_space));
             if matches!(ty.kind(Interner), TyKind::Ref(..)) {
                 data_ptr.valid_range_mut().start = 1;
             }
@@ -288,7 +288,7 @@ pub fn layout_of_ty_query(
                     scalar_unit(dl, Primitive::Int(dl.ptr_sized_integer(), false))
                 }
                 TyKind::Dyn(..) => {
-                    let mut vtable = scalar_unit(dl, Primitive::Pointer(AddressSpace::DATA));
+                    let mut vtable = scalar_unit(dl, Primitive::Pointer(dl.data_address_space));
                     vtable.valid_range_mut().start = 1;
                     vtable
                 }

@@ -181,7 +181,7 @@ impl<'ll, 'tcx> ConstCodegenMethods for CodegenCx<'ll, 'tcx> {
             assert!(i < (1 << bit_size));
         }
 
-        self.const_uint(self.isize_ty, i)
+        self.const_uint(self.type_isize(), i)
     }
 
     fn const_uint(&self, t: &'ll Type, i: u64) -> &'ll Value {

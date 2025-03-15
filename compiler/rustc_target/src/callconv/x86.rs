@@ -1,6 +1,5 @@
 use rustc_abi::{
-    AddressSpace, Align, BackendRepr, HasDataLayout, Primitive, Reg, RegKind, TyAbiInterface,
-    TyAndLayout,
+    Align, BackendRepr, HasDataLayout, Primitive, Reg, RegKind, TyAbiInterface, TyAndLayout,
 };
 
 use crate::callconv::{ArgAttribute, FnAbi, PassMode};
@@ -219,7 +218,9 @@ where
                 // SSE ABI. We prefer this over integer registers as float scalars need to be in SSE
                 // registers for float operations, so that's the best place to pass them around.
                 fn_abi.ret.cast_to(Reg { kind: RegKind::Vector, size: fn_abi.ret.layout.size });
-            } else if fn_abi.ret.layout.size <= Primitive::Pointer(AddressSpace::DATA).size(cx) {
+            } else if fn_abi.ret.layout.size
+                <= Primitive::Pointer(cx.data_layout().data_address_space).size(cx)
+            {
                 // Same size or smaller than pointer, return in an integer register.
                 fn_abi.ret.cast_to(Reg { kind: RegKind::Integer, size: fn_abi.ret.layout.size });
             } else {

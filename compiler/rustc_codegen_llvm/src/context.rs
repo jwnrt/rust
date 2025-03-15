@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 use std::str;
 
-use rustc_abi::{HasDataLayout, Size, TargetDataLayout, VariantIdx};
+use rustc_abi::{AddressSpace, HasDataLayout, Size, TargetDataLayout, VariantIdx};
 use rustc_codegen_ssa::back::versioned_llvm_target;
 use rustc_codegen_ssa::base::{wants_msvc_seh, wants_wasm_eh};
 use rustc_codegen_ssa::common::TypeKind;
@@ -48,7 +48,8 @@ use crate::{attributes, common, coverageinfo, debuginfo, llvm, llvm_util};
 pub(crate) struct SCx<'ll> {
     pub llmod: &'ll llvm::Module,
     pub llcx: &'ll llvm::Context,
-    pub isize_ty: &'ll Type,
+    pub address_size: Size,
+    pub address_space: AddressSpace,
 }
 
 impl<'ll> Borrow<SCx<'ll>> for FullCx<'ll, '_> {
@@ -597,7 +598,12 @@ impl<'ll, 'tcx> CodegenCx<'ll, 'tcx> {
         GenericCx(
             FullCx {
                 tcx,
-                scx: SimpleCx::new(llmod, llcx, tcx.data_layout.pointer_size),
+                scx: SimpleCx::new(
+                    llmod,
+                    llcx,
+                    tcx.data_layout.pointer_size,
+                    tcx.data_layout.data_address_space,
+                ),
                 use_dll_storage_attrs,
                 tls_model,
                 codegen_unit,
@@ -660,9 +666,9 @@ impl<'ll> SimpleCx<'ll> {
         llmod: &'ll llvm::Module,
         llcx: &'ll llvm::Context,
         pointer_size: Size,
+        address_space: AddressSpace,
     ) -> Self {
-        let isize_ty = llvm::Type::ix_llcx(llcx, pointer_size.bits());
-        Self(SCx { llmod, llcx, isize_ty }, PhantomData)
+        Self(SCx { llmod, llcx, pointer_size, address_space }, PhantomData)
     }
 }
 

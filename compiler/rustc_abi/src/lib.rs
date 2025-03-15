@@ -243,6 +243,7 @@ pub struct TargetDataLayout {
     pub vector_align: Vec<(Size, AbiAndPrefAlign)>,
 
     pub instruction_address_space: AddressSpace,
+    pub data_address_space: AddressSpace,
 
     /// Minimum size of #[repr(C)] enums (default c_int::BITS, usually 32)
     /// Note: This isn't in LLVM's data layout string, it is `short_enum`
@@ -274,6 +275,7 @@ impl Default for TargetDataLayout {
                 (Size::from_bits(128), AbiAndPrefAlign::new(align(128))),
             ],
             instruction_address_space: AddressSpace::DATA,
+            data_address_space: AddressSpace::DATA,
             c_enum_min_size: Integer::I32,
         }
     }
@@ -343,6 +345,9 @@ impl TargetDataLayout {
                 ["E"] => dl.endian = Endian::Big,
                 [p] if p.starts_with('P') => {
                     dl.instruction_address_space = parse_address_space(&p[1..], "P")?
+                }
+                [p] if p.starts_with('A') => {
+                    dl.data_address_space = parse_address_space(&p[1..], "A")?
                 }
                 ["a", a @ ..] => dl.aggregate_align = parse_align(a, "a")?,
                 ["f16", a @ ..] => dl.f16_align = parse_align(a, "f16")?,
@@ -1416,7 +1421,7 @@ pub struct AddressSpace(pub u32);
 
 impl AddressSpace {
     /// The default address space, corresponding to data space.
-    pub const DATA: Self = AddressSpace(0);
+    const DATA: Self = AddressSpace(0);
 }
 
 /// The way we represent values to the backend
