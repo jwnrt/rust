@@ -333,8 +333,15 @@ impl TargetDataLayout {
             Ok(AbiAndPrefAlign { abi: align_from_bits(abi)?, pref: align_from_bits(pref)? })
         };
 
+        #[derive(PartialEq, Eq)]
+        struct TargetPointerLayout {
+            size: Size,
+            align: AbiAndPrefAlign,
+        }
+
         let mut dl = TargetDataLayout::default();
         let mut i128_align_src = 64;
+        let mut pointer_layouts = Vec::new();
         for spec in input.split('-') {
             let spec_parts = spec.split(':').collect::<Vec<_>>();
 
@@ -349,12 +356,14 @@ impl TargetDataLayout {
                 ["f32", a @ ..] => dl.f32_align = parse_align(a, "f32")?,
                 ["f64", a @ ..] => dl.f64_align = parse_align(a, "f64")?,
                 ["f128", a @ ..] => dl.f128_align = parse_align(a, "f128")?,
-                // FIXME(erikdesjardins): we should be parsing nonzero address spaces
-                // this will require replacing TargetDataLayout::{pointer_size,pointer_align}
-                // with e.g. `fn pointer_size_in(AddressSpace)`
-                [p @ "p", s, a @ ..] | [p @ "p0", s, a @ ..] => {
-                    dl.pointer_size = parse_size(s, p)?;
-                    dl.pointer_align = parse_align(a, p)?;
+                [p, s, a @ ..] if p.starts_with('p') => {
+                    let addr_space = match *p {
+                        "p" => AddressSpace(0),
+                        _ => parse_address_space(&p[1..], "p")?,
+                    };
+                    let pointer_layout =
+                        TargetPointerLayout { size: parse_size(s, p)?, align: parse_align(a, p)? };
+                    pointer_layouts.push((addr_space, pointer_layout));
                 }
                 [s, a @ ..] if s.starts_with('i') => {
                     let Ok(bits) = s[1..].parse::<u64>() else {
@@ -390,6 +399,18 @@ impl TargetDataLayout {
                 _ => {} // Ignore everything else.
             }
         }
+
+        // FIXME(erikdesjardins): supporting multiple address spaces will
+        // will require replacing TargetDataLayout::pointers with e.g.
+        // `fn pointer_layout_in(AddressSpace)`
+        if let Some((_, layout)) = pointer_layouts
+            .into_iter()
+            .find(|(addr_space, _)| addr_space == &dl.instruction_address_space)
+        {
+            dl.pointer_size = layout.size;
+            dl.pointer_align = layout.align;
+        }
+
         Ok(dl)
     }
 
