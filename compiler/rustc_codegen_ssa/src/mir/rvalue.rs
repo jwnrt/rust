@@ -1,7 +1,7 @@
 use std::assert_matches::assert_matches;
 
 use arrayvec::ArrayVec;
-use rustc_abi::{self as abi, FIRST_VARIANT, FieldIdx};
+use rustc_abi::{self as abi, FIRST_VARIANT, FieldIdx, HasDataLayout};
 use rustc_middle::ty::adjustment::PointerCoercion;
 use rustc_middle::ty::layout::{HasTyCtxt, HasTypingEnv, LayoutOf, TyAndLayout};
 use rustc_middle::ty::{self, Instance, Ty, TyCtxt};
@@ -17,7 +17,10 @@ use crate::common::IntPredicate;
 use crate::traits::*;
 use crate::{MemFlags, base};
 
-impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
+impl<'a, 'tcx, Bx> FunctionCx<'a, 'tcx, Bx>
+where
+    Bx: BuilderMethods<'a, 'tcx> + HasDataLayout,
+{
     #[instrument(level = "trace", skip(self, bx))]
     pub(crate) fn codegen_rvalue(
         &mut self,
@@ -448,8 +451,9 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
                 let range = scalar.valid_range(self.cx);
                 bx.assume_integer_range(imm, backend_ty, range);
             }
-            abi::Primitive::Pointer(abi::AddressSpace::DATA)
-                if !scalar.valid_range(self.cx).contains(0) =>
+            abi::Primitive::Pointer(address_space)
+                if !scalar.valid_range(self.cx).contains(0)
+                    && address_space == bx.data_layout().data_address_space =>
             {
                 bx.assume_nonnull(imm);
             }

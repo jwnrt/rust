@@ -4,8 +4,8 @@ use std::borrow::Borrow;
 
 use libc::{c_char, c_uint};
 use rustc_abi as abi;
+use rustc_abi::HasDataLayout;
 use rustc_abi::Primitive::Pointer;
-use rustc_abi::{AddressSpace, HasDataLayout};
 use rustc_ast::Mutability;
 use rustc_codegen_ssa::common::TypeKind;
 use rustc_codegen_ssa::traits::*;
@@ -301,7 +301,7 @@ impl<'ll, 'tcx> ConstCodegenMethods for CodegenCx<'ll, 'tcx> {
                                     format!("alloc_{hash:032x}").as_bytes(),
                                 );
                             }
-                            (value, AddressSpace::DATA)
+                            (value, self.data_layout().data_address_space)
                         }
                     }
                     GlobalAlloc::Function { instance, .. } => {
@@ -319,12 +319,12 @@ impl<'ll, 'tcx> ConstCodegenMethods for CodegenCx<'ll, 'tcx> {
                             .unwrap_memory();
                         let init = const_alloc_to_llvm(self, alloc, /*static*/ false);
                         let value = self.static_addr_of_impl(init, alloc.inner().align, None);
-                        (value, AddressSpace::DATA)
+                        (value, self.data_layout().data_address_space)
                     }
                     GlobalAlloc::Static(def_id) => {
                         assert!(self.tcx.is_static(def_id));
                         assert!(!self.tcx.is_thread_local_static(def_id));
-                        (self.get_static(def_id), AddressSpace::DATA)
+                        (self.get_static(def_id), self.data_layout().data_address_space)
                     }
                 };
                 let llval = unsafe {

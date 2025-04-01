@@ -297,7 +297,7 @@ impl<'tcx> GlobalAlloc<'tcx> {
         match self {
             GlobalAlloc::Function { .. } => cx.data_layout().instruction_address_space,
             GlobalAlloc::Static(..) | GlobalAlloc::Memory(..) | GlobalAlloc::VTable(..) => {
-                AddressSpace::DATA
+                cx.data_layout().data_address_space
             }
         }
     }

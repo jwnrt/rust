@@ -1223,7 +1223,7 @@ fn start_executing_work<B: ExtraBackendMethods>(
         split_dwarf_kind: tcx.sess.opts.unstable_opts.split_dwarf_kind,
         parallel: backend.supports_parallel() && !sess.opts.unstable_opts.no_parallel_backend,
         pointer_size: tcx.data_layout.pointer_size,
-        data_address_space: AddressSpace::DATA,
+        data_address_space: tcx.data_layout.data_address_space,
     };
 
     // This is the "main loop" of parallel work happening for parallel codegen.

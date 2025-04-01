@@ -2,8 +2,8 @@ use std::str::FromStr;
 use std::{fmt, iter};
 
 use rustc_abi::{
-    AddressSpace, Align, BackendRepr, ExternAbi, HasDataLayout, Primitive, Reg, RegKind, Scalar,
-    Size, TyAbiInterface, TyAndLayout,
+    Align, BackendRepr, ExternAbi, HasDataLayout, Primitive, Reg, RegKind, Scalar, Size,
+    TyAbiInterface, TyAndLayout,
 };
 use rustc_macros::HashStable_Generic;
 
@@ -763,7 +763,7 @@ impl<'a, Ty> FnAbi<'a, Ty> {
             }
 
             if arg_idx.is_none()
-                && arg.layout.size > Primitive::Pointer(AddressSpace::DATA).size(cx) * 2
+                && arg.layout.size > cx.data_layout().pointer_size * 2
                 && !matches!(arg.layout.backend_repr, BackendRepr::SimdVector { .. })
             {
                 // Return values larger than 2 registers using a return area
@@ -821,9 +821,7 @@ impl<'a, Ty> FnAbi<'a, Ty> {
                     assert!(is_indirect_not_on_stack);
 
                     let size = arg.layout.size;
-                    if arg.layout.is_sized()
-                        && size <= Primitive::Pointer(AddressSpace::DATA).size(cx)
-                    {
+                    if arg.layout.is_sized() && size <= cx.data_layout().pointer_size {
                         // We want to pass small aggregates as immediates, but using
                         // an LLVM aggregate type for this leads to bad optimizations,
                         // so we pick an appropriately sized integer type instead.

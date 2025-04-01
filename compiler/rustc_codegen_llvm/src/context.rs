@@ -602,7 +602,12 @@ impl<'ll, 'tcx> CodegenCx<'ll, 'tcx> {
         GenericCx(
             FullCx {
                 tcx,
-                scx: SimpleCx::new(llmod, llcx, tcx.data_layout.pointer_size, AddressSpace::DATA),
+                scx: SimpleCx::new(
+                    llmod,
+                    llcx,
+                    tcx.data_layout.pointer_size,
+                    tcx.data_layout.data_address_space,
+                ),
                 use_dll_storage_attrs,
                 tls_model,
                 codegen_unit,

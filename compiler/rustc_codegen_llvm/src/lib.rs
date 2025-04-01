@@ -118,7 +118,7 @@ impl ExtraBackendMethods for LlvmCodegenBackend {
             module_llvm.llmod(),
             &module_llvm.llcx,
             tcx.data_layout.pointer_size,
-            AddressSpace::DATA,
+            tcx.data_layout.data_address_space,
         );
         unsafe {
             allocator::codegen(tcx, cx, module_name, kind, alloc_error_handler_kind);

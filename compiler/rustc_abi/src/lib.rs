@@ -275,9 +275,9 @@ impl Default for TargetDataLayout {
                 (Size::from_bits(64), AbiAndPrefAlign::new(align(64))),
                 (Size::from_bits(128), AbiAndPrefAlign::new(align(128))),
             ],
-            instruction_address_space: AddressSpace::DATA,
-            globals_address_space: AddressSpace::DATA,
-            data_address_space: AddressSpace::DATA,
+            instruction_address_space: AddressSpace(0),
+            globals_address_space: AddressSpace(0),
+            data_address_space: AddressSpace(0),
             c_enum_min_size: Integer::I32,
         }
     }
@@ -1444,11 +1444,6 @@ impl<FieldIdx: Idx> FieldsShape<FieldIdx> {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
 pub struct AddressSpace(pub u32);
-
-impl AddressSpace {
-    /// The default address space, corresponding to data space.
-    pub const DATA: Self = AddressSpace(0);
-}
 
 /// The way we represent values to the backend
 ///
