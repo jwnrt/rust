@@ -251,8 +251,8 @@ impl Type {
         unsafe { llvm::LLVMIntTypeInContext(llcx, num_bits as c_uint) }
     }
 
-    pub(crate) fn ptr_llcx(llcx: &llvm::Context) -> &Type {
-        unsafe { llvm::LLVMPointerTypeInContext(llcx, AddressSpace::DATA.0) }
+    pub(crate) fn ptr_llcx(llcx: &llvm::Context, address_space: AddressSpace) -> &Type {
+        unsafe { llvm::LLVMPointerTypeInContext(llcx, address_space.0) }
     }
 }
 

@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::{fs, io, mem, str, thread};
 
-use rustc_abi::Size;
+use rustc_abi::{AddressSpace, Size};
 use rustc_ast::attr;
 use rustc_ast::expand::autodiff_attrs::AutoDiffItem;
 use rustc_data_structures::fx::{FxHashMap, FxIndexMap};
@@ -357,6 +357,7 @@ pub struct CodegenContext<B: WriteBackendMethods> {
     pub split_debuginfo: rustc_target::spec::SplitDebuginfo,
     pub split_dwarf_kind: rustc_session::config::SplitDwarfKind,
     pub pointer_size: Size,
+    pub data_address_space: AddressSpace,
 
     /// All commandline args used to invoke the compiler, with @file args fully expanded.
     /// This will only be used within debug info, e.g. in the pdb file on windows
@@ -1222,6 +1223,7 @@ fn start_executing_work<B: ExtraBackendMethods>(
         split_dwarf_kind: tcx.sess.opts.unstable_opts.split_dwarf_kind,
         parallel: backend.supports_parallel() && !sess.opts.unstable_opts.no_parallel_backend,
         pointer_size: tcx.data_layout.pointer_size,
+        data_address_space: AddressSpace::DATA,
     };
 
     // This is the "main loop" of parallel work happening for parallel codegen.
