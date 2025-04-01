@@ -202,7 +202,7 @@ impl<'ll, CX: Borrow<SCx<'ll>>> BaseTypeCodegenMethods for GenericCx<'ll, CX> {
     }
 
     fn type_ptr(&self) -> &'ll Type {
-        self.type_ptr_ext(AddressSpace::DATA)
+        self.type_ptr_ext((**self).borrow().data_address_space)
     }
 
     fn type_ptr_ext(&self, address_space: AddressSpace) -> &'ll Type {
