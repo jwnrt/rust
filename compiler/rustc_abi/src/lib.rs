@@ -243,6 +243,8 @@ pub struct TargetDataLayout {
     pub vector_align: Vec<(Size, AbiAndPrefAlign)>,
 
     pub instruction_address_space: AddressSpace,
+    pub data_address_space: AddressSpace,
+    pub globals_address_space: AddressSpace,
 
     /// Minimum size of #[repr(C)] enums (default c_int::BITS, usually 32)
     /// Note: This isn't in LLVM's data layout string, it is `short_enum`
@@ -274,6 +276,8 @@ impl Default for TargetDataLayout {
                 (Size::from_bits(128), AbiAndPrefAlign::new(align(128))),
             ],
             instruction_address_space: AddressSpace::DATA,
+            globals_address_space: AddressSpace::DATA,
+            data_address_space: AddressSpace::DATA,
             c_enum_min_size: Integer::I32,
         }
     }
@@ -351,6 +355,12 @@ impl TargetDataLayout {
                 [p] if p.starts_with('P') => {
                     dl.instruction_address_space = parse_address_space(&p[1..], "P")?
                 }
+                [p] if p.starts_with('G') => {
+                    dl.globals_address_space = parse_address_space(&p[1..], "G")?
+                }
+                [p] if p.starts_with('A') => {
+                    dl.data_address_space = parse_address_space(&p[1..], "A")?
+                }
                 ["a", a @ ..] => dl.aggregate_align = parse_align(a, "a")?,
                 ["f16", a @ ..] => dl.f16_align = parse_align(a, "f16")?,
                 ["f32", a @ ..] => dl.f32_align = parse_align(a, "f32")?,
@@ -400,8 +410,8 @@ impl TargetDataLayout {
             }
         }
 
-        // FIXME(erikdesjardins): supporting multiple address spaces will
-        // will require replacing TargetDataLayout::pointers with e.g.
+        // FIXME(erikdesjardins): supporting address spaces with different pointer
+        // layouts will require replacing TargetDataLayout::pointers with e.g.
         // `fn pointer_layout_in(AddressSpace)`
         if let Some((_, layout)) = pointer_layouts
             .into_iter()
