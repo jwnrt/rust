@@ -214,6 +214,10 @@ pub(crate) unsafe fn create_module<'ll>(
             // LLVM 21 updated the default layout on nvptx: https://github.com/llvm/llvm-project/pull/124961
             target_data_layout = target_data_layout.replace("e-p6:32:32-i64", "e-i64");
         }
+        if sess.target.arch == "avr" {
+            // LLVM 21 updates the AVR layout to size pointers in both address spaces.
+            target_data_layout = target_data_layout.replace("p0:16:8-p1:16:8", "p:16:8");
+        }
     }
 
     // Ensure the data-layout values hardcoded remain the defaults.
